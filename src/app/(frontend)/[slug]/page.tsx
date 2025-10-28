@@ -7,11 +7,15 @@ import { draftMode } from 'next/headers'
 import React, { cache } from 'react'
 import { homeStatic } from '@/endpoints/seed/home-static'
 
+import { Customer } from '@/payload-types'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
+import { Gutter } from '@payloadcms/ui'
+import CustomerCarousel from '@/components/Customer/CustomerCarousel'
+import { cn } from '@/utilities/ui'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -55,19 +59,32 @@ export default async function Page({ params: paramsPromise }: Args) {
     slug: decodedSlug,
   })
 
-  // Remove this code once your website is seeded
-  if (!page && slug === 'home') {
-    page = homeStatic
-  }
+  const fetchCustomers = cache(async (): Promise<Customer[]> => {
+    const payload = await getPayload({ config: configPromise })
+    try {
+      const data = await payload.find({
+        collection: 'customer',
+        where: {
+          isActive: { equals: true },
+        },
+        sort: 'name',
+      })
+      return data.docs
+    } catch (error) {
+      console.error('Failed to fetch customers', error)
+      return []
+    }
+  })
 
   if (!page) {
     return <PayloadRedirects url={url} />
   }
 
   const { hero, layout } = page
+  const customers = await fetchCustomers()
 
   return (
-    <article className="pt-16 pb-24">
+    <article className="pt-16 pb-24 ">
       <PageClient />
       {/* Allows redirects for valid pages too */}
       <PayloadRedirects disableNotFound url={url} />
@@ -75,6 +92,16 @@ export default async function Page({ params: paramsPromise }: Args) {
       {draft && <LivePreviewListener />}
 
       <RenderHero {...hero} />
+      <div>
+        {decodedSlug === 'home' && (
+          <Gutter>
+            <div className="pt-10 bg-blue-100">
+              <h2 className="text-center text-2xl font-semibold text-slate-500">Our Customers</h2>
+              <CustomerCarousel customers={customers} />
+            </div>
+          </Gutter>
+        )}
+      </div>
       <RenderBlocks blocks={layout} />
     </article>
   )

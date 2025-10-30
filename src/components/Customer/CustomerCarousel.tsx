@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react'
 import type { Customer } from '@/payload-types'
+import Image from 'next/image'
 
 const CustomersCarousel = ({ customers }: { customers: Customer[] }) => {
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -97,9 +98,11 @@ const CustomersCarousel = ({ customers }: { customers: Customer[] }) => {
                 className="group block transition-opacity hover:opacity-75"
                 title={customer.customerName}
               >
-                <img
+                <Image
                   src={`${customer.customerLogo.url}?w=200&h=100`}
                   alt={customer.customerName}
+                  width={20}
+                  height={20}
                   className="h-12 w-auto object-contain grayscale transition-all duration-300 group-hover:grayscale-0 md:h-16"
                 />
               </a>

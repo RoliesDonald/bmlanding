@@ -11,6 +11,7 @@ const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://loc
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: '/cms', // tambahan 1
+  output: 'standalone',
   assetPrefix: '/cms', // tambahan 2
   images: {
     remotePatterns: [

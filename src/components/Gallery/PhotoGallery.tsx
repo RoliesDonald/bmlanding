@@ -1,4 +1,5 @@
 import { Gallery } from '@/payload-types'
+import Image from 'next/image'
 
 const PhotoGallery = ({ photos }: { photos: Gallery[] }) => {
   if (!photos || photos.length === 0) {
@@ -14,9 +15,11 @@ const PhotoGallery = ({ photos }: { photos: Gallery[] }) => {
             key={photo.id}
             className="group relative block aspect-square overflow-hidden rounded-lg shadow-lg"
           >
-            <img
+            <Image
               src={`${photo.image.url}?w=600&h=600`}
               alt={photo.title}
+              width={100}
+              height={100}
               className="h-full w-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
             />
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-60 p-4 text-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">

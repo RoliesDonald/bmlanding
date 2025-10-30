@@ -24,7 +24,7 @@ export const Logo = (props: Props) => {
         fetchPriority={priority}
         decoding="async"
         // className={clsx('max-w-[10.375rem] w-full h-[38px]', className)}
-        src="/logoBm.svg"
+        src="/cms/logoBm.svg"
         // src="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-logo-light.svg"
       />
       <h1 className="text-slate-600 dark:text-slate-200 font-semibold whitespace-nowrap text-2xl ml-4">

@@ -245,16 +245,16 @@
       "static/chunks/_app-pages-browser_node_modules_pnpm_date-fns_4_1_0_node_modules_date-fns_locale_zh-TW_js.js"
     ]
   },
-  "../node_modules/.pnpm/@payloadcms+ui@3.60.0_@types+react@19.1.8_monaco-editor@0.54.0_next@15.4.4_@babel+core@7.28.4_hr6hxhi5bydosqe4tmiz4osita/node_modules/@payloadcms/ui/dist/exports/client/index.js -> ./CodeEditor-WXQZOS3M.js": {
-    "id": "../node_modules/.pnpm/@payloadcms+ui@3.60.0_@types+react@19.1.8_monaco-editor@0.54.0_next@15.4.4_@babel+core@7.28.4_hr6hxhi5bydosqe4tmiz4osita/node_modules/@payloadcms/ui/dist/exports/client/index.js -> ./CodeEditor-WXQZOS3M.js",
+  "../node_modules/.pnpm/@payloadcms+ui@3.60.0_@types+react@19.1.8_monaco-editor@0.54.0_next@15.4.4_@babel+core@7.28.5_orhnpbov57eq5qa7usdc2t5o6e/node_modules/@payloadcms/ui/dist/exports/client/index.js -> ./CodeEditor-WXQZOS3M.js": {
+    "id": "../node_modules/.pnpm/@payloadcms+ui@3.60.0_@types+react@19.1.8_monaco-editor@0.54.0_next@15.4.4_@babel+core@7.28.5_orhnpbov57eq5qa7usdc2t5o6e/node_modules/@payloadcms/ui/dist/exports/client/index.js -> ./CodeEditor-WXQZOS3M.js",
     "files": [
-      "static/chunks/_app-pages-browser_node_modules_pnpm_payloadcms_ui_3_60_0__types_react_19_1_8_monaco-editor_0-5e4e2b.js"
+      "static/chunks/_app-pages-browser_node_modules_pnpm_payloadcms_ui_3_60_0__types_react_19_1_8_monaco-editor_0-d01d6c.js"
     ]
   },
-  "../node_modules/.pnpm/@payloadcms+ui@3.60.0_@types+react@19.1.8_monaco-editor@0.54.0_next@15.4.4_@babel+core@7.28.4_hr6hxhi5bydosqe4tmiz4osita/node_modules/@payloadcms/ui/dist/exports/client/index.js -> ./DatePicker-F432AIH3.js": {
-    "id": "../node_modules/.pnpm/@payloadcms+ui@3.60.0_@types+react@19.1.8_monaco-editor@0.54.0_next@15.4.4_@babel+core@7.28.4_hr6hxhi5bydosqe4tmiz4osita/node_modules/@payloadcms/ui/dist/exports/client/index.js -> ./DatePicker-F432AIH3.js",
+  "../node_modules/.pnpm/@payloadcms+ui@3.60.0_@types+react@19.1.8_monaco-editor@0.54.0_next@15.4.4_@babel+core@7.28.5_orhnpbov57eq5qa7usdc2t5o6e/node_modules/@payloadcms/ui/dist/exports/client/index.js -> ./DatePicker-F432AIH3.js": {
+    "id": "../node_modules/.pnpm/@payloadcms+ui@3.60.0_@types+react@19.1.8_monaco-editor@0.54.0_next@15.4.4_@babel+core@7.28.5_orhnpbov57eq5qa7usdc2t5o6e/node_modules/@payloadcms/ui/dist/exports/client/index.js -> ./DatePicker-F432AIH3.js",
     "files": [
-      "static/chunks/_app-pages-browser_node_modules_pnpm_payloadcms_ui_3_60_0__types_react_19_1_8_monaco-editor_0-2fcca0.js"
+      "static/chunks/_app-pages-browser_node_modules_pnpm_payloadcms_ui_3_60_0__types_react_19_1_8_monaco-editor_0-21eaa6.js"
     ]
   }
 }

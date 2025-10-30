@@ -1,0 +1,1 @@
+{"version":4,"routes":{"/gallery":{},"/contact":{}},"dynamicRoutes":{"/[slug]":{"fallback":null}},"notFoundRoutes":[],"preview":{"previewModeId":"8ddbf2725668920c8429482c9f3d18f1","previewModeSigningKey":"7c8671608bb6296a4c29253fc780404a29cdb8f012fd2d8aeb786265101232e4","previewModeEncryptionKey":"43b30d0ebcad2f436c477088be1455079fab1db47b20e8c4d08b566dd5892646"}}

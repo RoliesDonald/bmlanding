@@ -10,13 +10,20 @@ const PhotoGallery = ({ photos }: { photos: Gallery[] }) => {
     <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
       {photos.map((photo) => {
         console.log('Photo object fom front end', photo)
+        const photoGallery = photo.image
+        const photoUrl =
+          typeof photoGallery === 'object' && photoGallery !== null && 'url' in photoGallery
+            ? photoGallery.url
+            : null
+        if (!photoUrl) return null
+
         return (
           <div
             key={photo.id}
             className="group relative block aspect-square overflow-hidden rounded-lg shadow-lg"
           >
             <Image
-              src={`${photo.image.url}?w=600&h=600`}
+              src={`${photoUrl}?w=600&h=600`}
               alt={photo.title}
               width={100}
               height={100}

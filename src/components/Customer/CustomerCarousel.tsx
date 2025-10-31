@@ -85,29 +85,35 @@ const CustomersCarousel = ({ customers }: { customers: Customer[] }) => {
           className="flex gap-8 overflow-x-auto scroll-smooth px-4 md:px-8 justify-self-center"
           style={{ scrollSnapType: 'x mandatory' }}
         >
-          {customers.map((customer) => (
-            <div
-              key={customer.id}
-              className="flex flex-shrink-0 items-center justify-center"
-              style={{ scrollSnapAlign: 'center' }}
-            >
-              <a
-                href={customer.websiteUrl || '#'}
-                target={customer.websiteUrl ? '_blank' : '_self'}
-                rel="noopener noreferrer"
-                className="group block transition-opacity hover:opacity-75"
-                title={customer.customerName}
+          {customers.map((customer) => {
+            const logo = customer.customerLogo
+            const logoUrl =
+              typeof logo === 'object' && logo !== null && 'url' in logo ? logo.url : null
+            if (!logoUrl) return null
+            return (
+              <div
+                key={customer.id}
+                className="flex flex-shrink-0 items-center justify-center"
+                style={{ scrollSnapAlign: 'center' }}
               >
-                <Image
-                  src={`${customer.customerLogo.url}?w=200&h=100`}
-                  alt={customer.customerName}
-                  width={20}
-                  height={20}
-                  className="h-12 w-auto object-contain grayscale transition-all duration-300 group-hover:grayscale-0 md:h-16"
-                />
-              </a>
-            </div>
-          ))}
+                <a
+                  href={customer.websiteUrl || '#'}
+                  target={customer.websiteUrl ? '_blank' : '_self'}
+                  rel="noopener noreferrer"
+                  className="group block transition-opacity hover:opacity-75"
+                  title={customer.customerName}
+                >
+                  <Image
+                    src={`${logoUrl}?w=200&h=100`}
+                    alt={customer.customerName}
+                    width={20}
+                    height={20}
+                    className="h-12 w-auto object-contain grayscale transition-all duration-300 group-hover:grayscale-0 md:h-16"
+                  />
+                </a>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>

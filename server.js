@@ -4,7 +4,7 @@ import next from 'next'
 
 // Ambil PORT dari cPanel Environment Variable (atau default ke 3000 jika di lokal)
 const port = parseInt(process.env.PORT || '3000', 10)
-const dev = process.env.NODE_ENV !== 'production'
+const dev = false
 
 const app = next({ dev })
 const handle = app.getRequestHandler()

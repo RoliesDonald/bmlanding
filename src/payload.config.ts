@@ -24,7 +24,7 @@ const dirname = path.dirname(filename)
 // const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL + process.env.NEXT_PUBLIC_BASE_PATH
 
 export default buildConfig({
-  // serverURL: BASE_URL,
+  serverURL: 'https://bungmekanik.co.id/cms',
   admin: {
     meta: {
       title: 'Bung Mekanik',

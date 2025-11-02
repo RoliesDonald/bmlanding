@@ -44,10 +44,10 @@ export const Media: CollectionConfig = {
     adminThumbnail: 'thumbnail',
     focalPoint: true,
     imageSizes: [
-      {
-        name: 'thumbnail',
-        width: 300,
-      },
+      // {
+      //   name: 'thumbnail',
+      //   width: 300,
+      // },
       // {
       //   name: 'square',
       //   width: 500,

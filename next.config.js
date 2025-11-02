@@ -36,6 +36,13 @@ const nextConfig = {
   images: {
     path: '/cms/_next/image',
     remotePatterns: [
+      // untuk pengaturan media di cpanel
+      {
+        protocol: 'http',
+        hostname: 'bungmekanik.co.id',
+        pathname: '/cms/api/media/**',
+      },
+      //end pengaturan media di cpanel
       ...[NEXT_PUBLIC_SERVER_URL /* 'https://example.com' */]
         .map((item) => {
           if (!item) return null // tambahan 3
@@ -43,6 +50,7 @@ const nextConfig = {
           return {
             hostname: url.hostname,
             protocol: url.protocol.replace(':', ''),
+            pathname: '/cms/api/media/**', //tambahan untuk cpanel
           }
         })
         .filter(Boolean),

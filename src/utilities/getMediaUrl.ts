@@ -9,6 +9,17 @@ import { getClientSideURL } from '@/utilities/getURL'
 export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | null): string => {
   if (!url) return ''
 
+  //awal logic baypass
+  if (url.startsWith('/cms/api/media/file/')) {
+    const staticUrl = url.replace('cms/api/media/file/', '/cms/media/')
+
+    if (cacheTag && cacheTag !== '') {
+      cacheTag = encodeURIComponent(cacheTag)
+      return `${staticUrl}?${cacheTag}`
+    }
+    return staticUrl
+  }
+
   if (cacheTag && cacheTag !== '') {
     cacheTag = encodeURIComponent(cacheTag)
   }

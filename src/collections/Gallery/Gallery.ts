@@ -1,3 +1,5 @@
+import { anyone } from '@/access/anyone'
+import { authenticated } from '@/access/authenticated'
 import { CollectionConfig } from 'payload'
 
 export const Gallery: CollectionConfig = {
@@ -5,6 +7,12 @@ export const Gallery: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['image', 'title', 'order'],
+  },
+  access: {
+    read: anyone,
+    create: authenticated,
+    update: authenticated,
+    delete: authenticated,
   },
   fields: [
     {

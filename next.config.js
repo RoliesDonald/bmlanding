@@ -10,7 +10,7 @@ const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://loc
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // basePath: '/cms',
+  basePath: '/cms',
   // output: 'standalone',
   // assetPrefix: '',
   async rewrites() {
@@ -37,11 +37,11 @@ const nextConfig = {
     path: '/_next/image',
     remotePatterns: [
       // untuk pengaturan media di cpanel
-      // {
-      //   protocol: 'http',
-      //   hostname: 'bungmekanik.co.id',
-      //   pathname: '/cms/api/media/**',
-      // },
+      {
+        protocol: 'http',
+        hostname: 'bungmekanik.co.id',
+        pathname: '/cms/api/media/**',
+      },
       //end pengaturan media di cpanel
       ...[NEXT_PUBLIC_SERVER_URL /* 'https://example.com' */]
         .map((item) => {

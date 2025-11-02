@@ -22,11 +22,11 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle Menu"
         >
-          {isOpen ? <LucideMenu /> : <LucideXOctagon />}
+          {isOpen ? <LucideXOctagon /> : <LucideMenu />}
         </button>
 
         {/* NAV DESKTOP */}
-        <nav className="hidden md:flex flex-row gap-5 items-center justify-between pl-10">
+        <nav className="hidden md:flex flex-row gap-5  items-center justify-between pl-10">
           <div className="flex gap-4">
             {navItems.map(({ link }, i) => (
               <CMSLink

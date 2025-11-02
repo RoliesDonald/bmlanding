@@ -34,12 +34,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
   return (
     <header
-      className="container rounded-lg  shadow-md shadow-slate-700/50 sticky top-1 z-20 backdrop-blur-md"
+      className="container rounded-none bg-blue-900 md:bg-transparent md:rounded-full  shadow-md shadow-slate-700/50 sticky top-1 z-20 backdrop-blur-md"
       {...(theme ? { 'data-theme': theme } : {})}
     >
-      <div className="py-6 flex justify-between items-center">
+      <div className="py-6 flex justify-between items-center ">
         <Link href="/">
-          <Logo loading="eager" priority="high" className="invert dark:invert-0 w-32" />
+          <Logo loading="eager" priority="high" className="invert dark:invert-0 w-60 md:w-32" />
         </Link>
         <button
           className="md:hidden p-2 text-slate-200 rounded-md focus:outline-none focus:right-2 focus:ring-slate-400"

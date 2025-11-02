@@ -21,10 +21,10 @@ import { Gallery } from './collections/Gallery/Gallery'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-// const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL + process.env.NEXT_PUBLIC_BASE_PATH
+const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL + process.env.NEXT_PUBLIC_BASE_PATH
 
 export default buildConfig({
-  serverURL: 'https://bungmekanik.co.id/cms',
+  // serverURL: BASE_URL,
   admin: {
     meta: {
       title: 'Bung Mekanik',

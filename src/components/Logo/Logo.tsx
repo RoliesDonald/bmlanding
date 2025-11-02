@@ -27,7 +27,7 @@ export const Logo = (props: Props) => {
         src="/logoBm.svg"
         // src="https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-logo-light.svg"
       />
-      <h1 className="text-slate-600 dark:text-slate-200 font-semibold whitespace-nowrap text-2xl ml-4">
+      <h1 className="hidden md:flex text-slate-600 dark:text-slate-200 font-semibold whitespace-nowrap text-xl ml-4">
         Bung Mekanik
       </h1>
     </div>

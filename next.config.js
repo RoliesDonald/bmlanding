@@ -10,37 +10,36 @@ const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://loc
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: '/cms',
+  // basePath: '/cms',
   output: 'standalone',
   // assetPrefix: '',
-  async redirects() {
-    return [{ source: '/cms/admin/logout', destination: '/admin' }]
-  },
-  async rewrites() {
-    return [
-      {
-        source: '/cms/api/:path*',
-        destination: '/api/:path*',
-      },
-    ]
-  },
+  // async redirects() {
+  //   return [{ source: '/cms/admin/logout', destination: '/admin' }]
+  // },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/cms/api/:path*',
+  //       destination: '/api/:path*',
+  //     },
+  //   ]
+  // },
 
   images: {
     path: '/_next/image',
     remotePatterns: [
       // untuk pengaturan media di cpanel
-      // {
-      //   protocol: 'http',
-      //   hostname: 'localhost',
-      //   port: '3000',
-      //   pathname: '/api/media/**',
-      // },
-      // {
-      //   protocol: 'http',
-      //   hostname: 'localhost',
-      //   port: '3000',
-      //   pathname: '/cms/api/media/**',
-      // },
+      {
+        protocol: 'https', // Pastikan HTTPS
+        hostname: 'cms.bungmekanik.co.id', // Domain produksi Anda
+        pathname: '/api/media/**',
+      },
+      // Jika Anda masih ingin mendukung localhost di development:
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        pathname: '/api/media/**',
+      },
       //end pengaturan media di cpanel
       ...[NEXT_PUBLIC_SERVER_URL]
         .map((item) => {
@@ -49,7 +48,7 @@ const nextConfig = {
           return {
             hostname: url.hostname,
             protocol: url.protocol.replace(':', ''),
-            pathname: '/cms/api/media/**',
+            pathname: '/api/media/**',
           }
         })
         .filter(Boolean),

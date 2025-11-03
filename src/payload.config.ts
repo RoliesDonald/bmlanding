@@ -24,13 +24,13 @@ const dirname = path.dirname(filename)
 // const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL + process.env.NEXT_PUBLIC_BASE_PATH
 
 const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH
+// const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH
 
 export default buildConfig({
   serverURL: NEXT_PUBLIC_SERVER_URL,
   routes: {
-    admin: `${BASE_PATH}/admin`,
-    api: `${BASE_PATH}/api`,
+    // admin: `${BASE_PATH}/admin`,
+    // api: `${BASE_PATH}/api`,
     // admin: '/admin',
     // api: '/api',
   },

@@ -34,7 +34,7 @@ const nextConfig = {
     ]
   }, // tambahan 2
   images: {
-    path: '/_next/image',
+    path: '/cms/_next/image',
     remotePatterns: [
       // untuk pengaturan media di cpanel
       {

@@ -14,7 +14,7 @@ const nextConfig = {
   output: 'standalone',
   // assetPrefix: '',
   async redirects() {
-    return [{ source: '/cms/admin/logout', destination: '/cms/admin' }]
+    return [{ source: '/cms/admin/logout', destination: '/admin' }]
   },
   async rewrites() {
     return [
@@ -42,40 +42,17 @@ const nextConfig = {
       //   pathname: '/cms/api/media/**',
       // },
       //end pengaturan media di cpanel
-      // ...[NEXT_PUBLIC_SERVER_URL]
-      //   .map((item) => {
-      //     if (!item) return null
-      //     const url = new URL(item)
-      //     return {
-      //       hostname: url.hostname,
-      //       protocol: url.protocol.replace(':', ''),
-      //       pathname: '/cms/api/media/**',
-      //     }
-      //   })
-      //   .filter(Boolean),
-      ...[NEXT_PUBLIC_SERVER_URL /* 'https://example.com' */]
+      ...[NEXT_PUBLIC_SERVER_URL]
         .map((item) => {
           if (!item) return null
           const url = new URL(item)
-          return [
-            {
-              hostname: url.hostname,
-              protocol: 'https',
-              pathname: '/cms/api/media/**',
-            },
-
-            {
-              hostname: url.hostname,
-              protocol: 'https',
-              pathname: '/api/media/**',
-            },
-
-            // hostname: url.hostname,
-            // protocol: 'https',
-            // pathname: '/cms/api/media/**',
-          ]
+          return {
+            hostname: url.hostname,
+            protocol: url.protocol.replace(':', ''),
+            pathname: '/cms/api/media/**',
+          }
         })
-        .flat.filter(Boolean),
+        .filter(Boolean),
     ],
   },
   webpack: (webpackConfig) => {

@@ -13,33 +13,32 @@ const nextConfig = {
   basePath: '/cms',
   // output: 'standalone',
   // assetPrefix: '',
-  async rewrites() {
-    return [
-      // Rewrite untuk API Login yang bermasalah:
-      // {
-      //   source: '/api/users/login',
-      //   destination: '/cms/api/users/login',
-      // },
-      // // Tambahkan rewrite lain jika ada API yang masih bermasalah
-      // // Contoh: '/api/users/me'
-      // {
-      //   source: '/api/users/me',
-      //   destination: '/cms/api/users/me',
-      // },
-      // // Rewrite untuk API media yang mungkin masih bermasalah tanpa basePath
-      // {
-      //   source: '/api/media/:path*',
-      //   destination: '/cms/api/media/:path*',
-      // },
-    ]
-  }, // tambahan 2
+  async redirects() {
+    return [{ source: '/cms/admin/logout', destination: '/admin' }]
+  },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: '/cms/api/:path*',
+  //       destination: '/api/:path*',
+  //     },
+  //   ]
+  // },
+
   images: {
-    path: '/cms/_next/image',
+    path: '/_next/image',
     remotePatterns: [
       // untuk pengaturan media di cpanel
       {
         protocol: 'http',
-        hostname: 'bungmekanik.co.id',
+        hostname: 'localhost',
+        port: '3000',
+        pathname: '/api/media/**',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3000',
         pathname: '/cms/api/media/**',
       },
       //end pengaturan media di cpanel

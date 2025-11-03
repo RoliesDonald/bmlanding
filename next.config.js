@@ -57,13 +57,25 @@ const nextConfig = {
         .map((item) => {
           if (!item) return null
           const url = new URL(item)
-          return {
-            hostname: url.hostname,
-            protocol: 'https',
-            pathname: '/cms/api/media/**',
-          }
+          return [
+            {
+              hostname: url.hostname,
+              protocol: 'https',
+              pathname: '/cms/api/media/**',
+            },
+
+            {
+              hostname: url.hostname,
+              protocol: 'https',
+              pathname: '/api/media/**',
+            },
+
+            // hostname: url.hostname,
+            // protocol: 'https',
+            // pathname: '/cms/api/media/**',
+          ]
         })
-        .filter(Boolean),
+        .flat.filter(Boolean),
     ],
   },
   webpack: (webpackConfig) => {

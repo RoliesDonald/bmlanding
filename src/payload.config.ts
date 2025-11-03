@@ -27,14 +27,13 @@ const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://loc
 const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH
 
 export default buildConfig({
-  // serverURL: BASE_URL,
+  serverURL: NEXT_PUBLIC_SERVER_URL,
   routes: {
     admin: `${BASE_PATH}/admin`,
     api: `${BASE_PATH}/api`,
     // admin: '/admin',
     // api: '/api',
   },
-  serverURL: NEXT_PUBLIC_SERVER_URL,
   admin: {
     // logoutRoute: `/admin`,
     meta: {

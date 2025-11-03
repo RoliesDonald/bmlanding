@@ -11,45 +11,56 @@ const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://loc
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: '/cms',
-  // output: 'standalone',
+  output: 'standalone',
   // assetPrefix: '',
   async redirects() {
-    return [{ source: '/cms/admin/logout', destination: '/admin' }]
+    return [{ source: '/cms/admin/logout', destination: '/cms/admin' }]
   },
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: '/cms/api/:path*',
-  //       destination: '/api/:path*',
-  //     },
-  //   ]
-  // },
+  async rewrites() {
+    return [
+      {
+        source: '/cms/api/:path*',
+        destination: '/api/:path*',
+      },
+    ]
+  },
 
   images: {
     path: '/_next/image',
     remotePatterns: [
       // untuk pengaturan media di cpanel
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3000',
-        pathname: '/api/media/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3000',
-        pathname: '/cms/api/media/**',
-      },
+      // {
+      //   protocol: 'http',
+      //   hostname: 'localhost',
+      //   port: '3000',
+      //   pathname: '/api/media/**',
+      // },
+      // {
+      //   protocol: 'http',
+      //   hostname: 'localhost',
+      //   port: '3000',
+      //   pathname: '/cms/api/media/**',
+      // },
       //end pengaturan media di cpanel
+      // ...[NEXT_PUBLIC_SERVER_URL]
+      //   .map((item) => {
+      //     if (!item) return null
+      //     const url = new URL(item)
+      //     return {
+      //       hostname: url.hostname,
+      //       protocol: url.protocol.replace(':', ''),
+      //       pathname: '/cms/api/media/**',
+      //     }
+      //   })
+      //   .filter(Boolean),
       ...[NEXT_PUBLIC_SERVER_URL /* 'https://example.com' */]
         .map((item) => {
-          if (!item) return null // tambahan 3
+          if (!item) return null
           const url = new URL(item)
           return {
             hostname: url.hostname,
-            protocol: url.protocol.replace(':', ''),
-            pathname: '/api/media/**', //tambahan untuk cpanel
+            protocol: 'https',
+            pathname: '/cms/api/media/**',
           }
         })
         .filter(Boolean),

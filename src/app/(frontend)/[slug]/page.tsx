@@ -18,6 +18,10 @@ import CustomerCarousel from '@/components/Customer/CustomerCarousel'
 import { cn } from '@/utilities/ui'
 
 export async function generateStaticParams() {
+  if (process.env.CI) {
+    console.log('Skipping generateStaticParams due to CI environment(Firewall Block)')
+    return []
+  }
   const payload = await getPayload({ config: configPromise })
   const pages = await payload.find({
     collection: 'pages',

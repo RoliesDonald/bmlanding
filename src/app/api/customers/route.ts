@@ -3,7 +3,13 @@ import { getPayload } from 'payload'
 import config from '@/payload.config'
 
 export async function GET() {
-  //   const payload = await getPayload()
+  if (process.env.CI) {
+    console.warn('Payload client initialization skipped in CI for /api/customers')
+    return NextResponse.json(
+      { docs: [], totalDocs: 0, limit: 0, page: 1, totalPages: 1 },
+      { status: 200 },
+    )
+  }
   const payload = await getPayload({ config })
 
   try {

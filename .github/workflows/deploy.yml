@@ -18,12 +18,8 @@ jobs:
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - name: 🛠️ Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 8
-          run_install: false
+      - name: 🛠️ Install pnpm Globally
+        run: npm install -g pnpm
 
       - name: 📦 Install Dependencies
         run: pnpm install --frozen-lockfile

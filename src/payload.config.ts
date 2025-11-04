@@ -24,6 +24,18 @@ const dirname = path.dirname(filename)
 // const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL + process.env.NEXT_PUBLIC_BASE_PATH
 
 const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+const isCI = process.env.CI === 'true' || !!process.env.CI
+
+let dbAdapter = postgresAdapter({
+  pool: {
+    connectionString: process.env.DATABASE_URI || '',
+  },
+})
+
+if (isCI) {
+  console.log('---DB ADAPTER SKIPPED: Using Dummy DB Adapter in CI environment')
+  dbAdapter = {} as any
+}
 // const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH
 
 export default buildConfig({

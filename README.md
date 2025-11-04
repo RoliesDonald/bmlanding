@@ -323,3 +323,5 @@ If you have any issues or questions, reach out to us on [Discord](https://discor
 ## DEPLOY TO CPANEL
 
 https://kimino.my.id/articles/cara-upload-nextjs-ke-cpanel-panduan-langkah-demi-langkah
+
+https://kimino.my.id/articles/zero-click-deployment-nextjs-to-cpanel-with-github-actions

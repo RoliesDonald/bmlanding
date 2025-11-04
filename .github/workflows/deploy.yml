@@ -16,13 +16,20 @@ jobs:
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: 🛠️ Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.9.0
+          run_install: false
 
       - name: 📦 Install Dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: 🏗️ Build Next.js App
-        run: npm run build
+        run: pnpm run build
 
       - name: 📂 Prepare build-output folder
         run: |

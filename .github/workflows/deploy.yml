@@ -34,7 +34,7 @@ jobs:
       - name: 📂 Prepare build-output folder
         run: |
           mkdir -p build-output
-          cp -r .next package.json package-lock.json next.config.* tsconfig.* public/ build-output/ 2>/dev/null || true
+          cp -r .next package.json pnpm-lock.yaml next.config.* tsconfig.* public/ build-output/ 2>/dev/null || true
           echo "📁 Build output content:"
           ls -la build-output
 
@@ -65,7 +65,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: 'node_modules/*'
-          target: ${{ secrets.NODE_MODULES_DIR }}
+          # target: ${{ secrets.NODE_MODULES_DIR }}
           overwrite: true
           strip_components: 0
 

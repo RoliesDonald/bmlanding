@@ -5,13 +5,27 @@ import { cn } from '@/utilities/ui'
 
 // Fungsi untuk fetch data
 async function fetchGalleryPhotos(): Promise<Gallery[]> {
+  if (process.env.CI || !process.env.NEXT_PUBLIC_PAYLOAD_URL) {
+    console.warn('Skipping API fetch for gallery in CI/Local build environment.')
+    return []
+  }
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_PAYLOAD_URL}/api/gallery`, {
-      next: { tags: ['gallery'] }, // Untuk cache invalidasi
+    const baseUrl = process.env.NEXT_PUBLIC_PAYLOAD_URL || process.env.PAYLOAD_PUBLIC_SERVER
+
+    if (!baseUrl) {
+      throw new Error('base URL untuk payload tidak ditemukan')
+    }
+
+    const res = await fetch(`${baseUrl}/api/gallery`, {
+      next: { tags: ['gallery'] },
     })
 
+    // const res = await fetch(`${process.env.NEXT_PUBLIC_PAYLOAD_URL}/api/gallery`, {
+    //   next: { tags: ['gallery'] }, // Untuk cache invalidasi
+    // })
+
     if (!res.ok) {
-      console.error('Failed to fetch gallery photos')
+      console.error('Failed to fetch gallery photos', res.status, res.statusText)
       return []
     }
 

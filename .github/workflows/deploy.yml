@@ -30,6 +30,9 @@ jobs:
 
       - name: 🏗️ Build Next.js App
         run: pnpm run build
+        env:
+          PAYLOAD_SECRET: ${{secrets.PAYLOAD_SECRET}}
+          DATABASE_URI: ${{secrets.DATABASE_URI}}
 
       - name: 📂 Prepare build-output folder
         run: |

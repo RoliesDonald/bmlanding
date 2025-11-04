@@ -39,6 +39,7 @@ jobs:
           NODE_ENV: production
           PAYLOAD_IS_RUNNING_LOCALLY: 'false'
           SKIP_PAYLOAD_INIT: 'true'
+          NEXT_PRIVATE_SKIP_EXTERNAL_URL_CHECK: 'true'
 
       - name: 📂 Prepare build-output folder
         run: |

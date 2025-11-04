@@ -6,6 +6,10 @@ import { headers } from 'next/headers'
 export const maxDuration = 60 // This function can run for a maximum of 60 seconds
 
 export async function POST(): Promise<Response> {
+  if (process.env.CI) {
+    console.warn('Seed route blocked during CI build.')
+    return new Response('Action forbidden during CI build.', { status: 403 })
+  }
   const payload = await getPayload({ config })
   const requestHeaders = await headers()
 

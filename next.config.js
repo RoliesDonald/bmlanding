@@ -16,14 +16,25 @@ const nextConfig = {
   // async redirects() {
   //   return [{ source: '/cms/admin/logout', destination: '/admin' }]
   // },
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: '/cms/api/:path*',
-  //       destination: '/api/:path*',
-  //     },
-  //   ]
-  // },
+  async rewrites() {
+    if (process.env.CI) {
+      return [
+        {
+          source: '/api/:path*',
+          destination: '/404',
+        },
+        {
+          source: '/posts-sitemap.xml',
+          destination: '/404',
+        },
+        {
+          source: '/pages-sitemap.xml',
+          destination: '/404',
+        },
+      ]
+    }
+    return []
+  },
 
   images: {
     path: '/_next/image',

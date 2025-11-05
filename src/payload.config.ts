@@ -18,6 +18,7 @@ import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { Customer } from './collections/Customers/Customers'
 import { Gallery } from './collections/Gallery/Gallery'
+import { connect } from 'http2'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -35,15 +36,18 @@ let dbAdapter = postgresAdapter({
 if (isCI) {
   console.log('---DB ADAPTER SKIPPED: Using Dummy DB Adapter in CI environment')
   dbAdapter = {
+    name: 'safe-Ci-mock',
+    init: async () => {
+      console.log('MOCK INIT: Successfully blocked database initialization')
+    },
     connect: async () => {
-      /*No Opt*/
+      /*no-op */
     },
     disconnect: async () => {
-      /*No Opt*/
+      /*no-op */
     },
-    name: 'safe-ci-mock',
-    init: async () => {
-      /*no Opt */
+    destroy: async () => {
+      /*no-op */
     },
   } as any
 }
@@ -102,11 +106,12 @@ export default buildConfig({
   },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
-  db: postgresAdapter({
-    pool: {
-      connectionString: process.env.DATABASE_URI || '',
-    },
-  }),
+  // db: postgresAdapter({
+  //   pool: {
+  //     connectionString: process.env.DATABASE_URI || '',
+  //   },
+  // }),
+  db: dbAdapter as any,
   collections: [Pages, Posts, Media, Categories, Users, Customer, Gallery],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],

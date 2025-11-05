@@ -1,40 +1,51 @@
-import { getPayload, SanitizedConfig } from 'payload'
+import { getPayload } from 'payload'
+import { pathToFileURL } from 'url'
 import path from 'path'
-import { fileURLToPath, pathToFileURL } from 'url'
+import { fileURLToPath } from 'url'
+// import type { InitOptions } from 'payload/dist/payload-types' // Dihapus karena menyebabkan Error
 
-// Resolusi path untuk kompatibilitas ES Modules
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// Definisikan path config, seperti di deploy.yml
 const PAYLOAD_CONFIG_PATH =
   process.env.PAYLOAD_CONFIG_PATH || path.resolve(dirname, '../payload.config.ts')
 
 const run = async () => {
-  // 1. Verifikasi Environment Variables
-  if (!process.env.PAYLOAD_SECRET) {
-    console.error('❌ FATAL: PAYLOAD_SECRET is missing or unreadable in the Node.js process!')
-    console.error(`Attempted Config Path: ${PAYLOAD_CONFIG_PATH}`)
+  // 1. Debug eksplisit di lingkungan Node.js
+  const secret = process.env.PAYLOAD_SECRET
+  const dbUrl = process.env.DATABASE_URL
+
+  if (!secret) {
+    console.error('❌ FATAL: PAYLOAD_SECRET is missing or not readable by Node.js!')
     process.exit(1)
   }
 
-  console.log('🌱 Starting Payload Initialization for Admin Seed...')
+  // --- LOGGING DEBUG KRITIS ---
+  console.log('✅ DEBUG: PAYLOAD_SECRET (Partial):', secret.substring(0, 5) + '...')
+  console.log(
+    '✅ DEBUG: DATABASE_URL (Partial):',
+    dbUrl ? dbUrl.substring(0, 30) + '...' : 'MISSING',
+  )
+  console.log('🌱 Initializing Payload for Admin Seed...')
 
+  // 2. Inisialisasi Payload menggunakan dynamic import
   try {
-    // --- PERBAIKAN UTAMA DI SINI ---
-    // 1. Ubah path lokal menjadi format URL file (wajib untuk dynamic import)
-    const configUrl = pathToFileURL(PAYLOAD_CONFIG_PATH).toString()
+    const configPathUrl = pathToFileURL(PAYLOAD_CONFIG_PATH).href
+    const importedConfig = await import(configPathUrl)
 
-    // 2. Dynamic Import untuk mendapatkan objek konfigurasi (SanitizedConfig)
-    const importedConfig = await import(configUrl)
-    const configObject: SanitizedConfig = importedConfig.default as SanitizedConfig
+    if (!importedConfig.default) {
+      throw new Error(`Payload config file at ${PAYLOAD_CONFIG_PATH} must use default export.`)
+    }
 
-    // 3. Inisialisasi Payload menggunakan objek konfigurasi
-    const payload = await getPayload({ config: configObject })
-    // -------------------------------
+    // PENTING: Menghapus assertion 'as InitOptions' yang menyebabkan error
+    const payload = await getPayload({
+      config: importedConfig.default,
+    })
 
-    console.log('🌱 Checking for existing "users" collection...')
+    console.log('🌱 Checking for existing admin user...')
 
-    // Logika Seeder Admin: Cari pengguna pertama
+    // 3. Logika Seeder Admin
     const users = await payload.find({ collection: 'users', limit: 1 })
 
     if (users.totalDocs === 0) {
@@ -48,14 +59,18 @@ const run = async () => {
           roles: ['admin'],
         } as any,
       })
-      console.log('✅ Default admin created successfully:', process.env.ADMIN_EMAIL)
+      console.log('✅ Default admin created:', process.env.ADMIN_EMAIL)
     } else {
       console.log('✅ Admin user already exists, skipping seed.')
     }
 
     process.exit(0)
   } catch (err) {
-    console.error('💥 Error during Payload initialization or seeding:', (err as Error).message)
+    // --- PENCETAKAN ERROR LENGKAP ---
+    console.error('💥 Error during Payload initialization or seeding.')
+    console.error('--------------------------------------------------')
+    console.error(err) // Mencetak objek error lengkap, termasuk stack trace
+    console.error('--------------------------------------------------')
     process.exit(1)
   }
 }

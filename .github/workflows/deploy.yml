@@ -94,7 +94,7 @@ jobs:
         run: |
           echo "🌱 Running dedicated admin user seeder script..."
           # MENGGANTI node -e dengan ts-node untuk menjalankan file .ts yang lebih andal
-          npx ts-node --esm src/utilities/admin-seed.ts
+          node --loader ts-node/esm src/utilities/admin-seed.ts
 
       # 🏗️ Build Next.js + Payload
       - name: Build Next.js + Payload

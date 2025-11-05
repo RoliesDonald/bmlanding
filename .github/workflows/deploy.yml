@@ -1,4 +1,4 @@
-name: 🚀 Deploy Next.js to cPanel via SSH
+name: 🚀 Deploy Payload + Next.js Hybrid to CPanel
 
 on:
   push:
@@ -10,95 +10,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🧭 Checkout Repository
+      - name: 🧩 Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🟢 Setup Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # cache: 'pnpm'
 
-      - name: 🛠️ Install pnpm Globally (via npm)
-        run: npm install -g pnpm
+      - name: 📦 Install dependencies
+        run: npm ci
 
-      - name: 🔄 Set pnpm executable to PATH
-        run: echo "$(npm config get prefix)/bin" >> $GITHUB_PATH
+      - name: 🏗️ Build Next.js + Payload CMS
+        run: npm run build
 
-      - name: 📦 Install Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: 🏗️ Build Next.js App
-        # 🚨 PERUBAHAN KRITIS DI SINI: Menyuntikkan PAYLOAD_BUILD_MOCK inline
-        run: DATABASE_URL='' CI='true' PAYLOAD_BUILD_MOCK='true' pnpm run build
-        env:
-          # Variabel rahasia lainnya dipertahankan di blok env
-          PAYLOAD_SECRET: ${{secrets.PAYLOAD_SECRET}}
-          NEXT_PUBLIC_SERVER_URL: ${{secrets.NEXT_PUBLIC_SERVER_URL}}
-          PAYLOAD_PUBLIC_SERVER: ${{secrets.PAYLOAD_PUBLIC_SERVER}}
-          NEXT_PUBLIC_PAYLOAD_URL: ${{secrets.NEXT_PUBLIC_PAYLOAD_URL}}
-          NODE_ENV: production
-          NEXT_PRIVATE_SKIP_EXTERNAL_URL_CHECK: 'true'
-
-      - name: 📂 Prepare build-output folder
+      - name: 🧳 Prepare deployment package
         run: |
-          mkdir -p build-output
-          cp -r .next package.json pnpm-lock.yaml next.config.* tsconfig.* public/ build-output/ 2>/dev/null || true
-          echo "📁 Build output content:"
-          ls -la build-output
+          zip -r build.zip . -x "*.git*" "node_modules/*" ".github/*"
 
-      - name: 🗜️ Compress build-output
-        run: |
-          cd build-output
-          tar -czf ../build-output.tar.gz .
-          cd ..
-          echo "✅ build-output.tar.gz created:"
-          ls -lh build-output.tar.gz
-
-      - name: 📤 Upload compressed build to server
-        uses: appleboy/scp-action@v0.1.7
+      - name: 📤 Upload to CPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: 'build-output.tar.gz'
-          target: ${{ secrets.DEPLOY_DIR }}
-          overwrite: true
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: .
+          server-dir: /home/bungme/public_html/cms.bungmekanik.co.id/
+          exclude: |
+            **/.git*
+            **/.github*
+            **/node_modules/*
+            **/payload-types.ts
+            **/build.zip
 
-      - name: 📦 Upload node_modules to nodevenv
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: 'node_modules/*'
-          # target: ${{ secrets.NODE_MODULES_DIR }}
-          overwrite: true
-          strip_components: 0
-
-      - name: ⚙️ Extract & Deploy on server
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          script: |
-            echo "🚀 Starting deployment inside Node.js environment..."
-            bash -lc '
-              echo "🔧 Activating environment..."
-              source ${{ secrets.NODE_ENV_PATH }}
-
-              cd ${{ secrets.DEPLOY_DIR }}
-              echo "📦 Extracting build-output.tar.gz..."
-              tar -xzf build-output.tar.gz
-              rm -f build-output.tar.gz
-
-              echo "♻️ Restarting Node.js app..."
-              mkdir -p tmp
-              touch tmp/restart.txt || true
-
-              echo "✅ Deployment complete!"
-            '
+      - name: 🔄 Notify (manual restart)
+        run: echo "✅ Upload complete. Please restart Node.js app in cPanel manually."

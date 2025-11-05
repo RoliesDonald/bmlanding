@@ -1,22 +1,37 @@
-import { createServer } from 'http'
-import { parse } from 'url'
+// server.js
+import 'dotenv/config'
+import express from 'express'
 import next from 'next'
+import payload from 'payload'
 
-// Ambil PORT dari cPanel Environment Variable (atau default ke 3000 jika di lokal)
-const port = parseInt(process.env.PORT || '3000', 10)
-const dev = false
+const app = express()
+const PORT = process.env.PORT || 3000
+const dev = process.env.NODE_ENV !== 'production'
+const nextApp = next({ dev })
+const nextHandler = nextApp.getRequestHandler()
 
-const app = next({ dev })
-const handle = app.getRequestHandler()
+async function start() {
+  // Start Next.js first
+  await nextApp.prepare()
 
-app.prepare().then(() => {
-  createServer((req, res) => {
-    const parsedUrl = parse(req.url, true)
-    handle(req, res, parsedUrl)
-  }).listen(port)
+  // Initialize Payload CMS
+  await payload.init({
+    secret: process.env.PAYLOAD_SECRET,
+    express: app,
+    onInit: () => {
+      console.log(`🚀 Payload CMS ready at ${process.env.PAYLOAD_PUBLIC_URL}/admin`)
+    },
+  })
 
-  // Log status server
-  console.log(
-    `✅ Server running on http://localhost:${port} in ${dev ? 'development' : 'production'} mode`,
-  )
-})
+  // Next.js request handler (for frontend routes)
+  app.get('*', (req, res) => nextHandler(req, res))
+
+  // Start server
+  app.listen(PORT, (err) => {
+    if (err) throw err
+    console.log(`✅ Server running on port ${PORT}`)
+    console.log(`🌐 Public URL: ${process.env.PAYLOAD_PUBLIC_URL}`)
+  })
+}
+
+start()

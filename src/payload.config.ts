@@ -22,15 +22,23 @@ import { connect } from 'http2'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-// const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL + process.env.NEXT_PUBLIC_BASE_PATH
+const isMockBuild = process.env.PAYLOAD_BUILD_MOCK === 'true'
 
 const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
-const dbAdapter = postgresAdapter({
-  pool: {
-    connectionString: process.env.DATABASE_URI || '',
-  },
-})
+let dbAdapter
+if (!isMockBuild) {
+  const databaseUrl = process.env.DATABASE_URI || process.env.DATABASE_URL
+  if (!databaseUrl) {
+    throw new Error('❌ DATABASE_URL or DATABASE_URI is not set in environment variables.')
+  }
+
+  dbAdapter = postgresAdapter({
+    pool: {
+      connectionString: databaseUrl,
+    },
+  })
+}
 
 // const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH
 
@@ -87,19 +95,11 @@ export default buildConfig({
   },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
-  // db: postgresAdapter({
-  //   pool: {
-  //     connectionString: process.env.DATABASE_URI || '',
-  //   },
-  // }),
-  db: dbAdapter,
-  collections: [Pages, Posts, Media, Categories, Users, Customer, Gallery],
+  db: dbAdapter!,
+  collections: isMockBuild ? [] : [Pages, Posts, Media, Categories, Users, Customer, Gallery],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
-  plugins: [
-    ...plugins,
-    // storage-adapter-placeholder
-  ],
+  plugins: isMockBuild ? [] : [...plugins],
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {
@@ -108,7 +108,6 @@ export default buildConfig({
   jobs: {
     access: {
       run: ({ req }: { req: PayloadRequest }): boolean => {
-        // Allow logged in users to execute this endpoint (default)
         if (req.user) return true
         // If there is no logged in user, then check
         // for the Vercel Cron secret to be present as an
@@ -118,5 +117,12 @@ export default buildConfig({
       },
     },
     tasks: [],
+  },
+  onInit: async (payload) => {
+    if (isMockBuild) {
+      payload.logger.info('⚙️ PAYLOAD_BUILD_MOCK active — skipping DB connection & collections')
+    } else {
+      payload.logger.info('✅ Payload initialized with DB connection')
+    }
   },
 })

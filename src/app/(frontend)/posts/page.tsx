@@ -12,6 +12,10 @@ export const dynamic = 'force-static'
 export const revalidate = 600
 
 export default async function Page() {
+  if (process.env.CI) {
+    console.log('Passing Post page request to DB')
+    return []
+  }
   const payload = await getPayload({ config: configPromise })
 
   const posts = await payload.find({

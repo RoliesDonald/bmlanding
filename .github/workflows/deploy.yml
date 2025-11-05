@@ -157,5 +157,5 @@ jobs:
             **/payload-types.ts
             **/build.zip
 
-      - name: ✅ Done
+      - name: ✅ Done ya
         run: echo "✅ Build + Seed + Deploy selesai! Akses admin di/admin"

@@ -1,6 +1,6 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
-// HANYA impor tipe dasar yang terjamin diexport dari 'payload'
+// HANYA impor tipe dasar yang terjamin diexport dari 'payload' (untuk menghindari masalah circular dependency)
 import type { Payload, PaginatedDocs } from 'payload'
 
 // --- 1. Definisi Tipe Global untuk Cache ---

@@ -93,14 +93,15 @@ jobs:
         run: |
           echo "🌱 Checking for existing admin user..."
           node --input-type=module -e "
+            import path from 'path';
             import payload from 'payload';
             const run = async () => {
+              const configPath = path.resolve('src/payload.config.ts');
+              console.log('🧩 Loading Payload config from', configPath);
               await payload.init({
                 secret: process.env.PAYLOAD_SECRET,
-                mongoURL: false,
                 local: true,
-                express: null,
-                connection: { url: process.env.DATABASE_URL },
+                configPath,
               });
               const users = await payload.find({ collection: 'users', limit: 1 });
               if (users.totalDocs === 0) {

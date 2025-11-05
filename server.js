@@ -1,37 +1,29 @@
-// server.js
-import 'dotenv/config'
 import express from 'express'
-import next from 'next'
 import payload from 'payload'
+import next from 'next'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const app = express()
-const PORT = process.env.PORT || 3000
+const port = process.env.PORT || 3000
 const dev = process.env.NODE_ENV !== 'production'
 const nextApp = next({ dev })
-const nextHandler = nextApp.getRequestHandler()
+const handle = nextApp.getRequestHandler()
 
-async function start() {
-  // Start Next.js first
-  await nextApp.prepare()
-
-  // Initialize Payload CMS
+nextApp.prepare().then(async () => {
   await payload.init({
     secret: process.env.PAYLOAD_SECRET,
+    mongoURL: process.env.DATABASE_URL,
     express: app,
-    onInit: () => {
-      console.log(`🚀 Payload CMS ready at ${process.env.PAYLOAD_PUBLIC_URL}/admin`)
+    onInit: async () => {
+      payload.logger.info(`Payload Admin URL: ${process.env.PAYLOAD_PUBLIC_URL}/admin`)
     },
   })
 
-  // Next.js request handler (for frontend routes)
-  app.get('*', (req, res) => nextHandler(req, res))
+  app.use((req, res) => handle(req, res))
 
-  // Start server
-  app.listen(PORT, (err) => {
-    if (err) throw err
-    console.log(`✅ Server running on port ${PORT}`)
-    console.log(`🌐 Public URL: ${process.env.PAYLOAD_PUBLIC_URL}`)
+  app.listen(port, async () => {
+    console.log(`✅ Server running on port ${port}`)
   })
-}
-
-start()
+})

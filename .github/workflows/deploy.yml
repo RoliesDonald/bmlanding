@@ -32,7 +32,7 @@ jobs:
         run: pnpm run build
         env:
           PAYLOAD_SECRET: ${{secrets.PAYLOAD_SECRET}}
-          DATABASE_URI: ${{secrets.DATABASE_URI}}
+          DATABASE_URI: 'postgresql://ci-user:password@127.0.0.1:5432/ci_db_dummy'
           NEXT_PUBLIC_SERVER_URL: ${{secrets.NEXT_PUBLIC_SERVER_URL}}
           PAYLOAD_PUBLIC_SERVER: ${{secrets.PAYLOAD_PUBLIC_SERVER}}
           NEXT_PUBLIC_PAYLOAD_URL: ${{secrets.NEXT_PUBLIC_PAYLOAD_URL}}

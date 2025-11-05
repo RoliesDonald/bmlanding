@@ -26,7 +26,7 @@ const dirname = path.dirname(filename)
 
 const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
-let dbAdapter = postgresAdapter({
+const dbAdapter = postgresAdapter({
   pool: {
     connectionString: process.env.DATABASE_URI || '',
   },

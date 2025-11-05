@@ -1,14 +1,7 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 // HANYA impor tipe dasar yang terjamin diexport dari 'payload'
-import type {
-  Payload,
-  GlobalSlug,
-  CollectionSlug,
-  PaginatedDocs,
-  TransformCollectionWithSelect,
-  TransformGlobalWithSelect,
-} from 'payload'
+import type { Payload, PaginatedDocs } from 'payload'
 
 // --- 1. Definisi Tipe Global untuk Cache ---
 // Deklarasikan interface untuk objek cache yang akan disimpan di global
@@ -24,8 +17,8 @@ declare global {
 }
 // -------------------------------------------
 
-// Menggunakan variabel yang lebih deskriptif dan menambahkan pemeriksaan PAYLOAD_BUILD_MOCK
-const shouldMock = process.env.CI === 'true' || !!process.env.PAYLOAD_BUILD_MOCK
+// LOGIK MOCK PALING ROBUST: Gunakan mock jika PAYLOAD_BUILD_MOCK disetel ATAU jika CI disetel ke 'true'
+const useMockClient = !!process.env.PAYLOAD_BUILD_MOCK || process.env.CI === 'true'
 
 // Inisialisasi cache Payload menggunakan tipe yang didefinisikan
 let cached = global.payload
@@ -76,15 +69,19 @@ const mockClient: Partial<Payload> = {
   update: async () => ({}) as any,
   delete: async () => ({}) as any,
   init: async () => ({}) as any,
-
-  // Baris 'shutdown' telah dihapus karena tidak ada di tipe Payload terbaru.
 }
 
 export const getPayloadClient = async (): Promise<Payload> => {
-  // --- CI CHECK: Kembalikan klien mock di lingkungan CI ---
-  // Menggunakan shouldMock
-  if (shouldMock) {
-    console.log('MOCK PAYLOAD CLIENT: Returning safe mock client for CI build.')
+  // --- DEBUG LOG AGRESF & CI CHECK ---
+  console.log(`[DEBUG] ENV.PAYLOAD_BUILD_MOCK: ${process.env.PAYLOAD_BUILD_MOCK}`)
+  console.log(`[DEBUG] ENV.CI: ${process.env.CI}`)
+  console.log(`[DEBUG] useMockClient: ${useMockClient}`)
+
+  // Jika useMockClient bernilai true, mock akan diaktifkan
+  if (useMockClient) {
+    console.log(
+      'MOCK PAYLOAD CLIENT: Returning safe mock client for CI build. Database connection skipped.',
+    )
     return mockClient as unknown as Payload
   }
   // --------------------------------------------------------

@@ -49,6 +49,8 @@ if (isCI) {
     destroy: async () => {
       /*no-op */
     },
+    collections: {},
+    version: {},
     beginTransaction: async () => ({}) as any,
     commitTransaction: async () => {
       /*no -op */
@@ -56,26 +58,21 @@ if (isCI) {
     rollbackTransaction: async () => {
       /*no -op */
     },
-    collections: {},
-    version: {},
-    find: async ({ req }: { req: any }) => {
-      return {
-        docs: [],
-        totalDocs: 0,
-        limit: 1,
-        page: 1,
-        totalPages: 1,
-      }
-    },
-    findGlobal: async ({ req, slug }: { req: any; slug: string }) => {
-      return {} as any
-    },
+
+    find: async () => ({ docs: [], totalDocs: 0, limit: 1, page: 1, totalPages: 1 }) as any,
+    findGlobal: async () => ({}) as any,
 
     create: async () => ({}) as any,
     findOne: async () => ({}) as any,
     update: async () => ({}) as any,
     delete: async () => ({}) as any,
-    const: async () => 0,
+    count: async () => 0,
+
+    query: async () => ({}) as any,
+    ensureIndexes: async () => {
+      /*no-op */
+    },
+    getClient: async () => ({}) as any,
   } as any
 }
 // const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH

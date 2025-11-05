@@ -1,4 +1,4 @@
-name: 🚀 Deploy Payload + Next.js Hybrid to CPanel
+name: 🚀 Deploy Payload + Next.js Hybrid to CPanel (via Neon DB)
 
 on:
   push:
@@ -10,14 +10,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: 🧩 Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node.js environment
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
+      # 3️⃣ Install dependencies
       - name: 📦 Install dependencies
         run: |
           if [ -f package-lock.json ]; then
@@ -26,43 +30,41 @@ jobs:
             npm install
           fi
 
+      # 4️⃣ Build using temporary Neon DB (to bypass cPanel DB limit)
       - name: 🏗️ Build Next.js + Payload CMS
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_BUILD_URL }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           PAYLOAD_PUBLIC_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}
-          PAYLOAD_SKIP_DB: 'true'
-        run: npm run build -- --no-lint
-
-      # Upload hasil build Next.js (static/export) ke public_html
-      - name: 🚚 Deploy to Dewaweb via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.CPANEL_FTP_SERVER }}
-          username: ${{ secrets.CPANEL_FTP_USERNAME }}
-          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: ./out
-          server-dir: /public_html/
-          exclude: |
-            **/.git*
-            **/.github*
-            **/node_modules/*
-            **/payload-types.ts
-            **/build.zip
-
-      # (Opsional) Simpan build.zip untuk backup di cPanel
-      - name: 🧳 Upload zipped build (optional)
+          NEXT_PUBLIC_SERVER_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}
+          NEXT_PUBLIC_PAYLOAD_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}/api
+          NODE_ENV: production
         run: |
-          zip -r build.zip . -x "*.git*" "node_modules/*" ".github/*"
+          echo "🚧 Building project using temporary Neon database..."
+          npm run build -- --no-lint
+          echo "✅ Build completed successfully."
 
-      - name: 📤 Upload build.zip to cPanel via FTP (optional)
-        if: success()
+      # 5️⃣ (Optional) Export static output if you use `next export`
+      # Uncomment if you use static export:
+      # - name: 🧱 Export static build
+      #   run: npm run export
+
+      # 6️⃣ Prepare deployment package
+      - name: 📦 Prepare deployment package
+        run: |
+          echo "🧳 Preparing deployment package..."
+          mkdir -p deploy
+          cp -r .next public package.json package-lock.json server.js deploy/
+          echo "✅ Deployment package ready."
+
+      # 7️⃣ Deploy build to Dewaweb (cPanel) via FTP
+      - name: 📤 Deploy to Dewaweb via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: .
+          local-dir: ./deploy
           server-dir: /cms.bungmekanik.co.id/
           exclude: |
             **/.git*
@@ -70,5 +72,6 @@ jobs:
             **/node_modules/*
             **/payload-types.ts
 
-      - name: 🔄 Notify (manual restart)
-        run: echo "✅ Upload complete. Please restart Node.js app in cPanel manually."
+      # 8️⃣ Done notification
+      - name: ✅ Deployment finished
+        run: echo "✅ Upload completed. Please restart Node.js app manually in your Dewaweb cPanel."

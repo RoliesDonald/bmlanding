@@ -32,14 +32,14 @@ jobs:
         run: pnpm run build
         env:
           PAYLOAD_SECRET: ${{secrets.PAYLOAD_SECRET}}
-          DATABASE_URI:
+          # DATABASE_URI:
           NEXT_PUBLIC_SERVER_URL: ${{secrets.NEXT_PUBLIC_SERVER_URL}}
           PAYLOAD_PUBLIC_SERVER: ${{secrets.PAYLOAD_PUBLIC_SERVER}}
           NEXT_PUBLIC_PAYLOAD_URL: ${{secrets.NEXT_PUBLIC_PAYLOAD_URL}}
           PAYLOAD_BUILD_MOCK: 'true'
           NODE_ENV: production
           PAYLOAD_IS_RUNNING_LOCALLY: 'false'
-          SKIP_PAYLOAD_INIT: 'true'
+          # SKIP_PAYLOAD_INIT: 'true'
           NEXT_PRIVATE_SKIP_EXTERNAL_URL_CHECK: 'true'
 
       - name: 📂 Prepare build-output folder

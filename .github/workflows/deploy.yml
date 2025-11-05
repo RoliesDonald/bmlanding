@@ -56,28 +56,29 @@ jobs:
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
         run: |
           echo "🔍 Checking if 'posts' table exists..."
-          node -e "
-          import pg from 'pg';
-          const client = new pg.Client(process.env.DATABASE_URL);
-          const run = async () => {
-            await client.connect();
-            const res = await client.query(\`SELECT to_regclass('public.posts') as exists;\`);
-            if (!res.rows[0].exists) {
-              console.log('🧱 No tables found, running payload db:init...');
-              process.exit(1);
-            } else {
-              console.log('✅ Tables exist, skipping init.');
-              process.exit(0);
-            }
-          };
-          run();
+          node --input-type=module -e "
+            import pkg from 'pg';
+            const { Client } = pkg;
+            const client = new Client({ connectionString: process.env.DATABASE_URL });
+            const run = async () => {
+              await client.connect();
+              const res = await client.query(\`SELECT to_regclass('public.posts') as exists;\`);
+              if (!res.rows[0].exists) {
+                console.log('🧱 No tables found, running payload migrate:fresh...');
+                process.exit(1);
+              } else {
+                console.log('✅ Tables exist, skipping migration init.');
+                process.exit(0);
+              }
+            };
+            run();
           " || (
             if [ '${{ steps.detect-pm.outputs.manager }}' = 'pnpm' ]; then
-              pnpm payload db:init
+              pnpm payload migrate:fresh
             elif [ '${{ steps.detect-pm.outputs.manager }}' = 'yarn' ]; then
-              yarn payload db:init
+              yarn payload migrate:fresh
             else
-              npx payload db:init
+              npx payload migrate:fresh
             fi
           )
 
@@ -91,29 +92,35 @@ jobs:
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
           echo "🌱 Checking for existing admin user..."
-          node -e "
-          import payload from 'payload';
-          const run = async () => {
-            await payload.init({ secret: process.env.PAYLOAD_SECRET, mongoURL: false, local: true, express: null, connection: { url: process.env.DATABASE_URL } });
-            const users = await payload.find({ collection: 'users', limit: 1 });
-            if (users.totalDocs === 0) {
-              console.log('🌱 No admin found — creating default one...');
-              await payload.create({
-                collection: 'users',
-                data: {
-                  name: process.env.ADMIN_NAME || 'Administrator',
-                  email: process.env.ADMIN_EMAIL,
-                  password: process.env.ADMIN_PASSWORD,
-                  roles: ['admin']
-                }
+          node --input-type=module -e "
+            import payload from 'payload';
+            const run = async () => {
+              await payload.init({
+                secret: process.env.PAYLOAD_SECRET,
+                mongoURL: false,
+                local: true,
+                express: null,
+                connection: { url: process.env.DATABASE_URL },
               });
-              console.log('✅ Default admin created:', process.env.ADMIN_EMAIL);
-            } else {
-              console.log('✅ Admin user already exists, skipping seed.');
-            }
-            process.exit(0);
-          };
-          run().catch(err => { console.error(err); process.exit(1); });
+              const users = await payload.find({ collection: 'users', limit: 1 });
+              if (users.totalDocs === 0) {
+                console.log('🌱 No admin found — creating default one...');
+                await payload.create({
+                  collection: 'users',
+                  data: {
+                    name: process.env.ADMIN_NAME || 'Administrator',
+                    email: process.env.ADMIN_EMAIL,
+                    password: process.env.ADMIN_PASSWORD,
+                    roles: ['admin'],
+                  },
+                });
+                console.log('✅ Default admin created:', process.env.ADMIN_EMAIL);
+              } else {
+                console.log('✅ Admin user already exists, skipping seed.');
+              }
+              process.exit(0);
+            };
+            run().catch(err => { console.error(err); process.exit(1); });
           "
 
       # 🏗️ Build Next.js + Payload
@@ -124,7 +131,7 @@ jobs:
           PAYLOAD_PUBLIC_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}
         run: |
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm run build
+            pnpm build
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
             yarn build
           else

@@ -1,4 +1,4 @@
-name: 🚀 Deploy Payload + Next.js Hybrid (Auto Detect Package Manager)
+name: 🚀 Deploy Payload + Next.js Hybrid (Auto Init + Seed + FTP Upload)
 
 on:
   push:
@@ -18,8 +18,8 @@ jobs:
         with:
           node-version: 20
 
-      # 🧰 Auto detect package manager
-      - name: 🔍 Detect Package Manager
+      # 🔍 Auto detect package manager
+      - name: Detect Package Manager
         id: detect-pm
         run: |
           if [ -f pnpm-lock.yaml ]; then
@@ -31,44 +31,93 @@ jobs:
           fi
           echo "Detected package manager: ${{ steps.detect-pm.outputs.manager }}"
 
-      # 🧰 Setup PNPM if used
-      - name: ⚙️ Setup pnpm
+      # ⚙️ Setup pnpm if needed
+      - name: Setup pnpm
         if: steps.detect-pm.outputs.manager == 'pnpm'
         uses: pnpm/action-setup@v4
         with:
           version: 9
 
       # 📦 Install dependencies
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: |
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
             pnpm install --frozen-lockfile
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
             yarn install --frozen-lockfile
           else
-            if [ -f package-lock.json ]; then
-              npm ci
-            else
-              npm install
-            fi
+            npm ci
           fi
 
-      # 🧱 Run Payload DB migration (fix missing tables)
-      - name: 🧱 Run Payload DB migration
+      # 🧱 Initialize Payload DB schema (if not exists)
+      - name: Initialize Payload Database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_BUILD_URL }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
         run: |
-          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm payload migrate
-          elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
-            yarn payload migrate
-          else
-            npx payload migrate
-          fi
+          echo "🔍 Checking if 'posts' table exists..."
+          node -e "
+          import pg from 'pg';
+          const client = new pg.Client(process.env.DATABASE_URL);
+          const run = async () => {
+            await client.connect();
+            const res = await client.query(\`SELECT to_regclass('public.posts') as exists;\`);
+            if (!res.rows[0].exists) {
+              console.log('🧱 No tables found, running payload db:init...');
+              process.exit(1);
+            } else {
+              console.log('✅ Tables exist, skipping init.');
+              process.exit(0);
+            }
+          };
+          run();
+          " || (
+            if [ '${{ steps.detect-pm.outputs.manager }}' = 'pnpm' ]; then
+              pnpm payload db:init
+            elif [ '${{ steps.detect-pm.outputs.manager }}' = 'yarn' ]; then
+              yarn payload db:init
+            else
+              npx payload db:init
+            fi
+          )
 
-      # 🏗️ Build Next.js + Payload CMS
-      - name: 🏗️ Build Next.js + Payload CMS
+      # 🌱 Auto Seed (create default admin if not exists)
+      - name: Seed Default Admin User
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_BUILD_URL }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
+        run: |
+          echo "🌱 Checking for existing admin user..."
+          node -e "
+          import payload from 'payload';
+          const run = async () => {
+            await payload.init({ secret: process.env.PAYLOAD_SECRET, mongoURL: false, local: true, express: null, connection: { url: process.env.DATABASE_URL } });
+            const users = await payload.find({ collection: 'users', limit: 1 });
+            if (users.totalDocs === 0) {
+              console.log('🌱 No admin found — creating default one...');
+              await payload.create({
+                collection: 'users',
+                data: {
+                  name: process.env.ADMIN_NAME || 'Administrator',
+                  email: process.env.ADMIN_EMAIL,
+                  password: process.env.ADMIN_PASSWORD,
+                  roles: ['admin']
+                }
+              });
+              console.log('✅ Default admin created:', process.env.ADMIN_EMAIL);
+            } else {
+              console.log('✅ Admin user already exists, skipping seed.');
+            }
+            process.exit(0);
+          };
+          run().catch(err => { console.error(err); process.exit(1); });
+          "
+
+      # 🏗️ Build Next.js + Payload
+      - name: Build Next.js + Payload
         env:
           DATABASE_URL: ${{ secrets.DATABASE_BUILD_URL }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
@@ -83,12 +132,12 @@ jobs:
           fi
 
       # 🧳 Prepare deployment package
-      - name: 🧳 Prepare deployment package
+      - name: Prepare Deployment Package
         run: |
           zip -r build.zip . -x "*.git*" "node_modules/*" ".github/*"
 
-      # 📤 Upload to cPanel via FTP
-      - name: 📤 Upload to cPanel via FTP
+      # 📤 Deploy to cPanel via FTP
+      - name: Deploy to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
@@ -103,5 +152,5 @@ jobs:
             **/payload-types.ts
             **/build.zip
 
-      - name: 🔄 Done
-        run: echo "✅ Build, migrate, and upload complete. Restart Node.js app manually in cPanel."
+      - name: ✅ Done
+        run: echo "✅ Build + Seed + Deploy selesai! Akses admin di /admin"

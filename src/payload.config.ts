@@ -26,6 +26,8 @@ const isMockBuild = process.env.PAYLOAD_BUILD_MOCK === 'true'
 
 const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
 
+const databaseUrl = process.env.DATABASE_URL
+const secretKey = process.env.PAYLOAD_SECRET
 let dbAdapter
 if (!isMockBuild) {
   const databaseUrl = process.env.DATABASE_URI || process.env.DATABASE_URL
@@ -35,7 +37,7 @@ if (!isMockBuild) {
 
   dbAdapter = postgresAdapter({
     pool: {
-      connectionString: databaseUrl,
+      connectionString: databaseUrl!,
     },
   })
 }
@@ -43,6 +45,7 @@ if (!isMockBuild) {
 // const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH
 
 export default buildConfig({
+  secret: secretKey!,
   serverURL: NEXT_PUBLIC_SERVER_URL,
   routes: {
     // admin: `${BASE_PATH}/admin`,
@@ -100,7 +103,7 @@ export default buildConfig({
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins: isMockBuild ? [] : [...plugins],
-  secret: process.env.PAYLOAD_SECRET,
+  // secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

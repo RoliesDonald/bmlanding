@@ -33,11 +33,29 @@ jobs:
           PAYLOAD_PUBLIC_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}
         run: npm run build -- --no-lint
 
-      - name: 🧳 Prepare deployment package
+      # Upload hasil build Next.js (static/export) ke public_html
+      - name: 🚚 Deploy to Dewaweb via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: ./out
+          server-dir: /public_html/
+          exclude: |
+            **/.git*
+            **/.github*
+            **/node_modules/*
+            **/payload-types.ts
+            **/build.zip
+
+      # (Opsional) Simpan build.zip untuk backup di cPanel
+      - name: 🧳 Upload zipped build (optional)
         run: |
           zip -r build.zip . -x "*.git*" "node_modules/*" ".github/*"
 
-      - name: 📤 Upload to cPanel via FTP
+      - name: 📤 Upload build.zip to cPanel via FTP (optional)
+        if: success()
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
@@ -50,7 +68,6 @@ jobs:
             **/.github*
             **/node_modules/*
             **/payload-types.ts
-            **/build.zip
 
       - name: 🔄 Notify (manual restart)
         run: echo "✅ Upload complete. Please restart Node.js app in cPanel manually."

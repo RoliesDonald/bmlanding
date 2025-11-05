@@ -1,22 +1,20 @@
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
+import { getPayloadClient } from './getPayloadClient'
+import type { Redirect } from '@/payload-types'
 
-export async function getRedirects(depth = 1) {
-  if (process.env.CI) {
-    console.warn('Redirects fetch skipped during CI build.')
-    return []
-  }
-  const payload = await getPayload({ config: configPromise })
+async function getRedirects() {
+  const payload = await getPayloadClient()
 
-  const { docs: redirects } = await payload.find({
+  // const payload = await getPayload({ config: configPromise })
+
+  const redirects = await payload.find({
     collection: 'redirects',
-    depth,
-    limit: 0,
+    depth: 0,
+    limit: 1000,
     pagination: false,
   })
 
-  return redirects
+  return redirects.docs
 }
 
 /**

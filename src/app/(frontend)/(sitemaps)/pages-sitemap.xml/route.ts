@@ -5,21 +5,21 @@ import { unstable_cache } from 'next/cache'
 
 const getPagesSitemap = unstable_cache(
   async () => {
-    if (process.env.CI) {
-      console.warn('Pages Sitemap data fetch skipped during CI build.')
-      const dateFallback = new Date().toISOString()
-      const SITE_URL =
-        process.env.NEXT_PUBLIC_SERVER_URL ||
-        process.env.VERCEL_PROJECT_PRODUCTION_URL ||
-        'https://example.com'
+    // if (process.env.CI) {
+    //   console.warn('Pages Sitemap data fetch skipped during CI build.')
+    //   const dateFallback = new Date().toISOString()
+    //   const SITE_URL =
+    //     process.env.NEXT_PUBLIC_SERVER_URL ||
+    //     process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    //     'https://example.com'
 
-      const defaultSitemap = [
-        { loc: `${SITE_URL}/search`, lastmod: dateFallback },
-        { loc: `${SITE_URL}/posts`, lastmod: dateFallback },
-      ]
+    //   const defaultSitemap = [
+    //     { loc: `${SITE_URL}/search`, lastmod: dateFallback },
+    //     { loc: `${SITE_URL}/posts`, lastmod: dateFallback },
+    //   ]
 
-      return defaultSitemap
-    }
+    //   return defaultSitemap
+    // }
 
     const payload = await getPayload({ config })
     const SITE_URL =

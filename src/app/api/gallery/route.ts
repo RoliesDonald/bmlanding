@@ -11,9 +11,9 @@ function getDummyRespones() {
 }
 
 export async function GET() {
-  if (process.env.CI) {
-    return getDummyRespones()
-  }
+  // if (process.env.CI) {
+  //   return getDummyRespones()
+  // }
   const payload = await getPayload({ config })
 
   try {
@@ -32,11 +32,11 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (process.env.CI) {
-    // Untuk POST, kembalikan status 201 dengan objek dummy yang aman
-    console.warn('Payload client initialization skipped in CI for API POST route.')
-    return NextResponse.json({ doc: { id: 'dummy-ci-id' } }, { status: 201 })
-  }
+  // if (process.env.CI) {
+
+  //   console.warn('Payload client initialization skipped in CI for API POST route.')
+  //   return NextResponse.json({ doc: { id: 'dummy-ci-id' } }, { status: 201 })
+  // }
   const payload = await getPayload({ config })
 
   try {

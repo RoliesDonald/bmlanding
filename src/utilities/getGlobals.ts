@@ -1,17 +1,14 @@
 import type { Config } from '@/payload-types'
 
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
+import { getPayloadClient } from './getPayloadClient'
 
 type Global = keyof Config['globals']
 
 async function getGlobal(slug: Global, depth = 0) {
-  if (process.env.CI) {
-    console.warn(`Global fetch (${slug}) skipped during CI build.`)
-    return {} as any
-  }
-  const payload = await getPayload({ config: configPromise })
+  const payload = await getPayloadClient()
+
+  // const payload = await getPayload({ config: configPromise })
 
   const global = await payload.findGlobal({
     slug,

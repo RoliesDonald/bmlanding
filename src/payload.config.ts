@@ -25,7 +25,6 @@ const dirname = path.dirname(filename)
 // const BASE_URL = process.env.NEXT_PUBLIC_SERVER_URL + process.env.NEXT_PUBLIC_BASE_PATH
 
 const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-const isCI = process.env.CI === 'true' || !!process.env.CI
 
 let dbAdapter = postgresAdapter({
   pool: {
@@ -33,48 +32,6 @@ let dbAdapter = postgresAdapter({
   },
 })
 
-if (isCI) {
-  console.log('---DB ADAPTER SKIPPED: Using Dummy DB Adapter in CI environment')
-  dbAdapter = {
-    name: 'safe-Ci-mock',
-    init: async () => {
-      console.log('MOCK INIT: Successfully blocked database initialization')
-    },
-    connect: async () => {
-      /*no-op */
-    },
-    disconnect: async () => {
-      /*no-op */
-    },
-    destroy: async () => {
-      /*no-op */
-    },
-    collections: {},
-    version: {},
-    beginTransaction: async () => ({}) as any,
-    commitTransaction: async () => {
-      /*no -op */
-    },
-    rollbackTransaction: async () => {
-      /*no -op */
-    },
-
-    find: async () => ({ docs: [], totalDocs: 0, limit: 1, page: 1, totalPages: 1 }) as any,
-    findGlobal: async () => ({}) as any,
-
-    create: async () => ({}) as any,
-    findOne: async () => ({}) as any,
-    update: async () => ({}) as any,
-    delete: async () => ({}) as any,
-    count: async () => 0,
-
-    query: async () => ({}) as any,
-    ensureIndexes: async () => {
-      /*no-op */
-    },
-    getClient: async () => ({}) as any,
-  } as any
-}
 // const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH
 
 export default buildConfig({
@@ -135,7 +92,7 @@ export default buildConfig({
   //     connectionString: process.env.DATABASE_URI || '',
   //   },
   // }),
-  db: dbAdapter as any,
+  db: dbAdapter,
   collections: [Pages, Posts, Media, Categories, Users, Customer, Gallery],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],

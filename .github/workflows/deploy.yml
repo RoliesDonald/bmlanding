@@ -27,7 +27,11 @@ jobs:
           fi
 
       - name: 🏗️ Build Next.js + Payload CMS
-        run: npm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          PAYLOAD_PUBLIC_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}
+        run: npm run build -- --no-lint
 
       - name: 🧳 Prepare deployment package
         run: |

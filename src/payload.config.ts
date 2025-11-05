@@ -70,6 +70,12 @@ if (isCI) {
     findGlobal: async ({ req, slug }: { req: any; slug: string }) => {
       return {} as any
     },
+
+    create: async () => ({}) as any,
+    findOne: async () => ({}) as any,
+    update: async () => ({}) as any,
+    delete: async () => ({}) as any,
+    const: async () => 0,
   } as any
 }
 // const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH

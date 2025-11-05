@@ -34,7 +34,18 @@ let dbAdapter = postgresAdapter({
 
 if (isCI) {
   console.log('---DB ADAPTER SKIPPED: Using Dummy DB Adapter in CI environment')
-  dbAdapter = {} as any
+  dbAdapter = {
+    connect: async () => {
+      /*No Opt*/
+    },
+    disconnect: async () => {
+      /*No Opt*/
+    },
+    name: 'safe-ci-mock',
+    init: async () => {
+      /*no Opt */
+    },
+  } as any
 }
 // const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH
 

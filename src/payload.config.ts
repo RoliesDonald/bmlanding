@@ -3,7 +3,7 @@ import { postgresAdapter } from '@payloadcms/db-postgres'
 
 import sharp from 'sharp' // sharp-import
 import path from 'path'
-import { buildConfig, PayloadRequest } from 'payload'
+import { buildConfig, commitTransaction, PayloadRequest } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
@@ -48,6 +48,27 @@ if (isCI) {
     },
     destroy: async () => {
       /*no-op */
+    },
+    beginTransaction: async () => ({}) as any,
+    commitTransaction: async () => {
+      /*no -op */
+    },
+    rollbackTransaction: async () => {
+      /*no -op */
+    },
+    collections: {},
+    version: {},
+    find: async ({ req }: { req: any }) => {
+      return {
+        docs: [],
+        totalDocs: 0,
+        limit: 1,
+        page: 1,
+        totalPages: 1,
+      }
+    },
+    findGlobal: async ({ req, slug }: { req: any; slug: string }) => {
+      return {} as any
     },
   } as any
 }

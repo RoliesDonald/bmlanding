@@ -92,8 +92,18 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
+          echo "🌱 Installing ts-node before execution..."
+          # Instal ts-node secara eksplisit
+          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
+            pnpm install ts-node
+          elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
+            yarn add ts-node
+          else
+            npm install ts-node
+          fi
+
           echo "🌱 Running dedicated admin user seeder script..."
-          # MENGGANTI node -e dengan ts-node untuk menjalankan file .ts yang lebih andal
+          # Menggunakan Node Loader untuk memastikan TS/ESM bekerja
           node --loader ts-node/esm src/utilities/admin-seed.ts
 
       # 🏗️ Build Next.js + Payload

@@ -92,6 +92,8 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
+          echo "Debug: PAYLOAD_SECRET check: ${PAYLOAD_SECRET+set}"
+          echo "Debug: DATABASE_URL check: ${DATABASE_URL+set}"
           echo "🌱 Checking for existing admin user..."
           node -e "
           import { getPayload } from 'payload';

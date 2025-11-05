@@ -85,40 +85,16 @@ jobs:
       # 🌱 Auto Seed (create default admin if not exists)
       - name: Seed Default Admin User
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_BUILD_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           PAYLOAD_CONFIG_PATH: src/payload.config.ts
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
-          echo "Debug: PAYLOAD_SECRET check: ${PAYLOAD_SECRET+set}"
-          echo "Debug: DATABASE_URL check: ${DATABASE_URL+set}"
-          echo "🌱 Checking for existing admin user..."
-          node -e "
-          import { getPayload } from 'payload';
-          const run = async () => {
-            const payload = await getPayload({ config: process.env.PAYLOAD_CONFIG_PATH });
-            const users = await payload.find({ collection: 'users', limit: 1 });
-            if (users.totalDocs === 0) {
-              console.log('🌱 No admin found — creating default one...');
-              await payload.create({
-                collection: 'users',
-                data: {
-                  name: process.env.ADMIN_NAME || 'Administrator',
-                  email: process.env.ADMIN_EMAIL,
-                  password: process.env.ADMIN_PASSWORD,
-                  roles: ['admin']
-                }
-              });
-              console.log('✅ Default admin created:', process.env.ADMIN_EMAIL);
-            } else {
-              console.log('✅ Admin user already exists, skipping seed.');
-            }
-            process.exit(0);
-          };
-          run().catch(err => { console.error(err); process.exit(1); });
-          "
+          echo "🌱 Running dedicated admin user seeder script..."
+          # MENGGANTI node -e dengan ts-node untuk menjalankan file .ts yang lebih andal
+          npx ts-node src/utilities/admin-seed.ts
 
       # 🏗️ Build Next.js + Payload
       - name: Build Next.js + Payload

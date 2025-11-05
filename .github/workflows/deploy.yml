@@ -1,4 +1,4 @@
-name: 🚀 Deploy Payload + Next.js Hybrid to CPanel (via Neon DB)
+name: 🚀 Deploy Payload + Next.js Hybrid (Auto Detect Package Manager)
 
 on:
   push:
@@ -10,68 +10,85 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
       - name: 🧩 Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js environment
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
-      # 3️⃣ Install dependencies
-      - name: 📦 Install dependencies
+      # 🧰 Auto detect package manager
+      - name: 🔍 Detect Package Manager
+        id: detect-pm
         run: |
-          if [ -f package-lock.json ]; then
-            npm ci
+          if [ -f pnpm-lock.yaml ]; then
+            echo "manager=pnpm" >> $GITHUB_OUTPUT
+          elif [ -f yarn.lock ]; then
+            echo "manager=yarn" >> $GITHUB_OUTPUT
           else
-            npm install
+            echo "manager=npm" >> $GITHUB_OUTPUT
+          fi
+          echo "Detected package manager: ${{ steps.detect-pm.outputs.manager }}"
+
+      # 🧰 Install appropriate package manager
+      - name: ⚙️ Setup Package Manager
+        if: steps.detect-pm.outputs.manager == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # 📦 Install dependencies
+      - name: 📦 Install Dependencies
+        run: |
+          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
+            pnpm install --frozen-lockfile
+          elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
+            yarn install --frozen-lockfile
+          else
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
           fi
 
-      # 4️⃣ Build using temporary Neon DB (to bypass cPanel DB limit)
+      # 🏗️ Build Next.js + Payload CMS
       - name: 🏗️ Build Next.js + Payload CMS
         env:
           DATABASE_URL: ${{ secrets.DATABASE_BUILD_URL }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           PAYLOAD_PUBLIC_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}
-          NEXT_PUBLIC_SERVER_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}
-          NEXT_PUBLIC_PAYLOAD_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}/api
-          NODE_ENV: production
         run: |
-          echo "🚧 Building project using temporary Neon database..."
-          npm run build -- --no-lint
-          echo "✅ Build completed successfully."
+          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
+            pnpm run build -- --no-lint
+          elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
+            yarn build --no-lint
+          else
+            npm run build -- --no-lint
+          fi
 
-      # 5️⃣ (Optional) Export static output if you use `next export`
-      # Uncomment if you use static export:
-      # - name: 🧱 Export static build
-      #   run: npm run export
-
-      # 6️⃣ Prepare deployment package
-      - name: 📦 Prepare deployment package
+      # 🧳 Prepare deployment package
+      - name: 🧳 Prepare deployment package
         run: |
-          echo "🧳 Preparing deployment package..."
-          mkdir -p deploy
-          cp -r .next public package.json package-lock.json server.js deploy/
-          echo "✅ Deployment package ready."
+          zip -r build.zip . -x "*.git*" "node_modules/*" ".github/*"
 
-      # 7️⃣ Deploy build to Dewaweb (cPanel) via FTP
-      - name: 📤 Deploy to Dewaweb via FTP
+      # 📤 Upload to cPanel via FTP
+      - name: 📤 Upload to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: ./deploy
+          local-dir: .
           server-dir: /cms.bungmekanik.co.id/
           exclude: |
             **/.git*
             **/.github*
             **/node_modules/*
             **/payload-types.ts
+            **/build.zip
 
-      # 8️⃣ Done notification
-      - name: ✅ Deployment finished
-        run: echo "✅ Upload completed. Please restart Node.js app manually in your Dewaweb cPanel."
+      # 🔄 Done message
+      - name: 🔄 Notify
+        run: echo "✅ Upload complete. Please restart your Node.js app manually in cPanel."

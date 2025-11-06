@@ -56,7 +56,8 @@ jobs:
           # Mencari semua file .ts dan .tsx lalu mencari pola import yang bermasalah
           # Pola: import ... from './path' atau '@/path' yang TIDAK diakhiri .ts
           FOUND=$(find src -type f \( -name "*.ts" -o -name "*.tsx" \) -exec grep -Hn "from\s\+['\"]\(\.\.?\/\|@\/\)\(?!.*\.ts\)['\"]" {} \;)
-          if [-n "$FOUND"]; then
+
+          if [ -n "$FOUND" ]; then
             echo "❌ ERROR : Found import missing the .ts extension"
             echo "------------------------------------------"
             echo "$FOUND"
@@ -92,11 +93,11 @@ jobs:
           run();
           " || (
             if [ '${{ steps.detect-pm.outputs.manager }}' = 'pnpm' ]; then
-              pnpm payload migrate:fresh --force
+              pnpm payload migrate:fresh --force --yes
             elif [ '${{ steps.detect-pm.outputs.manager }}' = 'yarn' ]; then
-              yarn payload migrate:fresh --force
+              yarn payload migrate:fresh --force --yes
             else
-              npx payload migrate:fresh --force
+              npx payload migrate:fresh --force --yes
             fi
           )
 

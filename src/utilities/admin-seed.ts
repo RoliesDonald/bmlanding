@@ -37,7 +37,7 @@ const run = async () => {
     if (!importedConfig.default) {
       throw new Error(`Payload config file at ${PAYLOAD_CONFIG_PATH} must use default export.`)
     }
-
+    console.log('🔧 DEBUG: Calling getPayload...')
     // PENTING: Menghapus assertion 'as InitOptions' yang menyebabkan error
     const payload = await getPayload({
       config: importedConfig.default,
@@ -66,13 +66,10 @@ const run = async () => {
 
     process.exit(0)
   } catch (err) {
-    // --- PENCETAKAN ERROR LENGKAP ---
     console.error('💥 Error during Payload initialization or seeding.')
     console.error('--------------------------------------------------')
-    // GANTI BARIS INI
-    // console.error(err)
-    // MENJADI INI:
-    console.error(JSON.stringify(err, null, 2))
+    console.error('Error object:', err) // Cetak objek asli
+    console.error('Error stringified:', JSON.stringify(err, null, 2)) // Cetak yang sudah di-stringify
     console.error('--------------------------------------------------')
     process.exit(1)
   }

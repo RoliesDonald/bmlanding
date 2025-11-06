@@ -111,15 +111,33 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
-          echo "🌱 Running admin seeder script..."
-          # HANYA SATU PERINTAH INI YANG DIJALANKAN
-          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm exec ts-node --esm src/utilities/admin-seed.ts
-          elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
-            yarn exec ts-node --esm src/utilities/admin-seed.ts
-          else
-            npx ts-node --esm src/utilities/admin-seed.ts
-          fi
+          echo "🌱 Compiling seeder script and dependencies..."
+          # Buat file tsconfig sementara khusus untuk kompilasi seeder
+          cat > tsconfig.seeder.json << EOF
+          {
+            "extends": "./tsconfig.json",
+            "compilerOptions": {
+              "outDir": "./dist-seeder",
+              "module": "ESNext",
+              "target": "ES2022",
+              "moduleResolution": "Node"
+            },
+            "include": [
+              "src/utilities/admin-seed.ts",
+              "src/payload.config.ts",
+              "src/collections/**/*.ts",
+              "src/fields/**/*.ts"
+            ]
+          }
+          EOF
+
+          echo "🔧 Running: npx tsc --project tsconfig.seeder.json"
+          npx tsc --project tsconfig.seeder.json
+
+          echo "🌱 Running compiled seeder script with Node.js..."
+          # Jalankan file .js hasil kompilasi dengan node murni
+          # Tidak ada lagi ts-node, loader, atau require yang rumit
+          node ./dist-seeder/utilities/admin-seed.js
 
       # 🏗️ Build Next.js + Payload
       - name: Build Next.js + Payload

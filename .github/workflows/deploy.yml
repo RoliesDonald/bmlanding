@@ -106,40 +106,41 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-          PAYLOAD_CONFIG_PATH: src/payload.config.ts
+          PAYLOAD_CONFIG_PATH: ./dist-seeder/payload.config.js
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
           echo "🌱 Compiling seeder script and dependencies..."
+
           # Buat file tsconfig sementara khusus untuk kompilasi seeder
           cat > tsconfig.seeder.json << EOF
           {
             "extends": "./tsconfig.json",
             "compilerOptions": {
               "outDir": "./dist-seeder",
-              "module": "ESNext",
+              "module": "NodeNext",
               "target": "ES2022",
               "moduleResolution": "NodeNext",
-              "noImplicitAny": false,
+              "noImplicitAny": false
             },
             "include": [
               "src/utilities/admin-seed.ts",
               "src/payload.config.ts",
               "src/collections/**/*.ts",
-              "src/fields/**/*.ts"
+              "src/fields/**/*.ts",
               "src/plugins/**/*.ts",
               "src/search/**/*.ts"
             ]
           }
           EOF
 
+          # Jalankan kompilasi TypeScript menggunakan tsc
           echo "🔧 Running: npx tsc --project tsconfig.seeder.json"
           npx tsc --project tsconfig.seeder.json
 
           echo "🌱 Running compiled seeder script with Node.js..."
           # Jalankan file .js hasil kompilasi dengan node murni
-          # Tidak ada lagi ts-node, loader, atau require yang rumit
           node ./dist-seeder/utilities/admin-seed.js
 
       # 🏗️ Build Next.js + Payload

@@ -69,7 +69,10 @@ const run = async () => {
     // --- PENCETAKAN ERROR LENGKAP ---
     console.error('💥 Error during Payload initialization or seeding.')
     console.error('--------------------------------------------------')
-    console.error(err) // Mencetak objek error lengkap, termasuk stack trace
+    // GANTI BARIS INI
+    // console.error(err)
+    // MENJADI INI:
+    console.error(JSON.stringify(err, null, 2))
     console.error('--------------------------------------------------')
     process.exit(1)
   }

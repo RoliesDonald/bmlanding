@@ -134,16 +134,17 @@ jobs:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          protocol: FTP
-          port: 21
-          local-dir: ./
-          server-dir: /cms.bungmekanik.co.id/
+          local-dir: ./cma.bungmekanik.co.id # 🔧 DIPERBAIKI: Ambil isi folder ini
+          server-dir: cma.bungmekanik.co.id # 🔧 DIPERBAIKI: Upload ke folder ini
           exclude: |
             **/.git*
             **/.github*
-            **/node_modules/*
-            **/payload-types.ts
-            **/build.zip
+            **/node_modules/**
+            **/dist-seeder/**
+            **/.next/cache/**
+            **/.DS_Store
+            **/Thumbs.db
+            **/*.log
 
       - name: ✅ Done ya
         run: echo "✅ Build + Seed + Deploy selesai! Akses admin di/admin"

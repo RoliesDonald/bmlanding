@@ -120,13 +120,16 @@ jobs:
               "outDir": "./dist-seeder",
               "module": "ESNext",
               "target": "ES2022",
-              "moduleResolution": "Node"
+              "moduleResolution": "NodeNext",
+              "noImplicitAny": false,
             },
             "include": [
               "src/utilities/admin-seed.ts",
               "src/payload.config.ts",
               "src/collections/**/*.ts",
               "src/fields/**/*.ts"
+              "src/plugins/**/*.ts",
+              "src/search/**/*.ts"
             ]
           }
           EOF

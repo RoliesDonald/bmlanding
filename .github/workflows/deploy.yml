@@ -95,11 +95,11 @@ jobs:
           echo "🌱 Running dedicated admin user seeder script using Payload CLI..."
           # Tidak perlu install ts-node lagi, karena sudah terinstall di step "Install Dependencies"
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm payload run src/utilities/admin-seed.ts
+            pnpm exec node --loader ts-node/esm --require tsconfig-paths/register src/utilities/admin-seed.ts
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
-            yarn payload run src/utilities/admin-seed.ts
+            yarn exec node --loader ts-node/esm --require tsconfig-paths/register src/utilities/admin-seed.ts
           else
-            payload run src/utilities/admin-seed.ts
+            npx ts-node -r tsconfig-paths/register --esm src/utilities/admin-seed.ts
           fi
 
           echo "🌱 Running dedicated admin user seeder script..."

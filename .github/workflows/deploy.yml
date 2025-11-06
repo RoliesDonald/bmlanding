@@ -95,11 +95,11 @@ jobs:
           echo "🌱 Installing ts-node before execution..."
           # Instal ts-node secara eksplisit
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm install ts-node
+            pnpm payload run-script src/utilities/admin-seed.ts
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
-            yarn add ts-node
+            yarn payload run-script src/utilities/admin-seed.ts
           else
-            npm install ts-node
+            npx payload run-script src/utilities/admin-seed.ts
           fi
 
           echo "🌱 Running dedicated admin user seeder script..."

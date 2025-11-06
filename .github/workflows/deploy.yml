@@ -92,14 +92,14 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
-          echo "🌱 Installing ts-node before execution..."
-          # Instal ts-node secara eksplisit
+          echo "🌱 Running dedicated admin user seeder script using Payload CLI..."
+          # Tidak perlu install ts-node lagi, karena sudah terinstall di step "Install Dependencies"
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
             pnpm payload run src/utilities/admin-seed.ts
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
             yarn payload run src/utilities/admin-seed.ts
           else
-            npx payload run src/utilities/admin-seed.ts
+            payload run src/utilities/admin-seed.ts
           fi
 
           echo "🌱 Running dedicated admin user seeder script..."

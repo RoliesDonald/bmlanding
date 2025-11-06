@@ -50,9 +50,9 @@ jobs:
           fi
 
       # 🔍 Debug: List imports missing .ts extension
-      - name: Debug: List imports missing .ts extension
+      - name: 🔍 Debug: List imports missing .ts extension
         run: |
-          echo "🔍 Debug: List imports missing .ts extension"
+          echo "🔍 Scanning for imports missing .ts extension..."
           # Mencari semua file .ts dan .tsx lalu mencari pola import yang bermasalah
           # Pola: import ... from './path' atau '@/path' yang TIDAK diakhiri .ts
           FOUND=$(find src -type f \( -name "*.ts" -o -name "*.tsx" \) -exec grep -Hn "from\s\+['\"]\(\.\.?\/\|@\/\)\(?!.*\.ts\)['\"]" {} \;)

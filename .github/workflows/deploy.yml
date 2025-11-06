@@ -142,9 +142,28 @@ jobs:
           echo "🔧 Running: npx tsc --project tsconfig.seeder.json"
           npx tsc --project tsconfig.seeder.json
 
+          # --- Tambahkan Debugging ---
+          echo "🔍 DEBUG: Checking if compilation output exists..."
+          ls -la ./dist-seeder/
+          echo "🔍 DEBUG: Content of the compiled seeder script:"
+          head -n 20 ./dist-seeder/utilities/admin-seed.js
+          echo "🔍 DEBUG: Content of the compiled config script:"
+          head -n 20 ./dist-seeder/payload.config.js
+          # --- Akhir Debugging ---
+
           echo "🌱 Running compiled seeder script with Node.js..."
           # Jalankan file .js hasil kompilasi dengan node murni
+          # Tambahkan 'set +e' sementara untuk menangkap error tanpa menghentikan skrip
+          set +e
           node ./dist-seeder/utilities/admin-seed.js
+          EXIT_CODE=$?
+          set -e
+
+          echo "🔍 DEBUG: Seeder script finished with exit code: $EXIT_CODE"
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "❌ Seeder script failed."
+            exit $EXIT_CODE
+          fi
 
       # 🏗️ Build Next.js + Payload
       - name: Build Next.js + Payload

@@ -112,34 +112,15 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
-          echo "🌱 Compiling seeder script and dependencies..."
-
-          # Buat file tsconfig sementara khusus untuk kompilasi seeder
-          cat > tsconfig.seeder.json << EOF
-          {
-            "extends": "./tsconfig.json",
-            "compilerOptions": {
-              "outDir": "./dist-seeder",
-              "noImplicitAny": false,
-              "noEmit": false,
-              "allowImportingTsExtensions": false
-            },
-            "include": [
-              "src/utilities/admin-seed.ts",
-              "src/payload.config.ts",
-              "src/access/**/*.ts",
-              "src/blocks/**/*.ts",
-              "src/collections/**/*.ts",
-              "src/fields/**/*.ts",
-              "src/heros/**/*.ts",
-              "src/hooks/**/*.ts",
-              "src/plugins/**/*.ts",
-              "src/search/**/*.ts",
-              "src/utilities/**/*.ts",
-              "src/payload-types.ts"
-            ]
-          }
-          EOF
+          echo "🌱 Running admin seeder script with modern Node.js hooks..."
+          # Menggunakan `--import` yang merupakan cara modern dan stabil untuk ESM
+          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
+            pnpm exec node --import ts-node/esm --import tsconfig-paths/register src/utilities/admin-seed.ts
+          elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
+            yarn exec node --import ts-node/esm --import tsconfig-paths/register src/utilities/admin-seed.ts
+          else
+            npx node --import ts-node/esm --import tsconfig-paths/register src/utilities/admin-seed.ts
+          fi
 
           # Jalankan kompilasi TypeScript menggunakan tsc
           echo "🔧 Running: npx tsc --project tsconfig.seeder.json"

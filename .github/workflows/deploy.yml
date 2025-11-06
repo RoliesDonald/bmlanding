@@ -112,14 +112,14 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
-          echo "🌱 Running admin seeder script with modern Node.js hooks..."
-          # Menggunakan `--import` yang merupakan cara modern dan stabil untuk ESM
+          echo "🌱 Running admin seeder script..."
+          # Menambahkan .js ke path register sesuai saran error message
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm exec node --import ts-node/esm --import tsconfig-paths/register src/utilities/admin-seed.ts
+            pnpm exec node --import ts-node/esm --import tsconfig-paths/register.js src/utilities/admin-seed.ts
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
-            yarn exec node --import ts-node/esm --import tsconfig-paths/register src/utilities/admin-seed.ts
+            yarn exec node --import ts-node/esm --import tsconfig-paths/register.js src/utilities/admin-seed.ts
           else
-            npx node --import ts-node/esm --import tsconfig-paths/register src/utilities/admin-seed.ts
+            npx node --import ts-node/esm --import tsconfig-paths/register.js src/utilities/admin-seed.ts
           fi
 
           # Jalankan kompilasi TypeScript menggunakan tsc

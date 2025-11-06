@@ -75,6 +75,10 @@ jobs:
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           PAYLOAD_CONFIG_PATH: src/payload.config.ts
         run: |
+          echo "🔍 DEBUG: Listing contents of src directory to verify migrations folder:"
+          ls -la src/
+          echo "--------------------------------------------------"
+
           echo "🔍 Checking if 'posts' table exists..."
           node -e "
           import pg from 'pg';
@@ -93,12 +97,11 @@ jobs:
           run();
           " || (
             echo "y" | if [ '${{ steps.detect-pm.outputs.manager }}' = 'pnpm' ]; then
-              # GUNAKAN echo "y" | ... UNTUK MENJAWAB PROMPT
               pnpm payload migrate:fresh --force
             elif [ '${{ steps.detect-pm.outputs.manager }}' = 'yarn' ]; then
-              echo "y" | yarn payload migrate:fresh --force
+              yarn payload migrate:fresh --force
             else
-              echo "y" | npx payload migrate:fresh --force
+              npx payload migrate:fresh --force
             fi
           )
 
@@ -112,14 +115,14 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
-          echo "🌱 Running admin seeder script..."
-          # Menambahkan .js ke path register sesuai saran error message
+          echo "🌱 Running admin seeder script with npx ts-node..."
+          # Kembali ke perintah npx ts-node yang lebih klasik dan andal
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm exec node --import ts-node/esm --import tsconfig-paths/register.js src/utilities/admin-seed.ts
+            pnpm exec ts-node --esm -r tsconfig-paths/register src/utilities/admin-seed.ts
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
-            yarn exec node --import ts-node/esm --import tsconfig-paths/register.js src/utilities/admin-seed.ts
+            yarn exec ts-node --esm -r tsconfig-paths/register src/utilities/admin-seed.ts
           else
-            npx node --import ts-node/esm --import tsconfig-paths/register.js src/utilities/admin-seed.ts
+            npx ts-node --esm -r tsconfig-paths/register src/utilities/admin-seed.ts
           fi
 
           # Jalankan kompilasi TypeScript menggunakan tsc

@@ -119,18 +119,10 @@ jobs:
             "extends": "./tsconfig.json",
             "compilerOptions": {
               "outDir": "./dist-seeder",
-              "module": "NodeNext",
-              "target": "ES2022",
-              "moduleResolution": "NodeNext",
               "noImplicitAny": false
             },
             "include": [
-              "src/utilities/admin-seed.ts",
-              "src/payload.config.ts",
-              "src/collections/**/*.ts",
-              "src/fields/**/*.ts",
-              "src/plugins/**/*.ts",
-              "src/search/**/*.ts"
+              "src/**/*"
             ]
           }
           EOF

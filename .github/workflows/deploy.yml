@@ -92,12 +92,13 @@ jobs:
           };
           run();
           " || (
-            if [ '${{ steps.detect-pm.outputs.manager }}' = 'pnpm' ]; then
-              pnpm payload migrate:fresh --force --yes
+            echo "y" | if [ '${{ steps.detect-pm.outputs.manager }}' = 'pnpm' ]; then
+              # GUNAKAN echo "y" | ... UNTUK MENJAWAB PROMPT
+              pnpm payload migrate:fresh --force
             elif [ '${{ steps.detect-pm.outputs.manager }}' = 'yarn' ]; then
-              yarn payload migrate:fresh --force --yes
+              echo "y" | yarn payload migrate:fresh --force
             else
-              npx payload migrate:fresh --force --yes
+              echo "y" | npx payload migrate:fresh --force
             fi
           )
 
@@ -119,7 +120,8 @@ jobs:
             "extends": "./tsconfig.json",
             "compilerOptions": {
               "outDir": "./dist-seeder",
-              "noImplicitAny": false
+              "noImplicitAny": false,
+              "noEmit": false
             },
             "include": [
               "src/utilities/admin-seed.ts",
@@ -142,28 +144,9 @@ jobs:
           echo "🔧 Running: npx tsc --project tsconfig.seeder.json"
           npx tsc --project tsconfig.seeder.json
 
-          # --- Tambahkan Debugging ---
-          echo "🔍 DEBUG: Checking if compilation output exists..."
-          ls -la ./dist-seeder/
-          echo "🔍 DEBUG: Content of the compiled seeder script:"
-          head -n 20 ./dist-seeder/utilities/admin-seed.js
-          echo "🔍 DEBUG: Content of the compiled config script:"
-          head -n 20 ./dist-seeder/payload.config.js
-          # --- Akhir Debugging ---
-
           echo "🌱 Running compiled seeder script with Node.js..."
           # Jalankan file .js hasil kompilasi dengan node murni
-          # Tambahkan 'set +e' sementara untuk menangkap error tanpa menghentikan skrip
-          set +e
           node ./dist-seeder/utilities/admin-seed.js
-          EXIT_CODE=$?
-          set -e
-
-          echo "🔍 DEBUG: Seeder script finished with exit code: $EXIT_CODE"
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "❌ Seeder script failed."
-            exit $EXIT_CODE
-          fi
 
       # 🏗️ Build Next.js + Payload
       - name: Build Next.js + Payload

@@ -56,9 +56,9 @@ jobs:
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           PAYLOAD_CONFIG_PATH: src/payload.config.ts
         run: |
-          echo "🔍 DEBUG: Listing contents of src directory to verify migrations folder:"
-          ls -la src/
-          echo "--------------------------------------------------"
+          # PASTIKAN folder migrations selalu ada sebagai langkah pencegahan
+          echo "🔧 Ensuring migrations directory exists..."
+          mkdir -p src/migrations
 
           echo "🔍 Checking if 'posts' table exists..."
           node -e "
@@ -91,58 +91,20 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
-          PAYLOAD_CONFIG_PATH: ./dist-seeder/payload.config.js
+          PAYLOAD_CONFIG_PATH: src/payload.config.ts
           ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
-          echo "🌱 Compiling seeder script and dependencies..."
-
-          # Buat file tsconfig sementara yang benar-benar terisolasi
-          cat > tsconfig.seeder.json << EOF
-          {
-            "compilerOptions": {
-              "target": "ES2022",
-              "module": "NodeNext",
-              "moduleResolution": "NodeNext",
-              "outDir": "./dist-seeder",
-              "esModuleInterop": true,
-              "forceConsistentCasingInFileNames": true,
-              "strict": true,
-              "skipLibCheck": true,
-              "noImplicitAny": false,
-              "noEmit": false,
-              "allowImportingTsExtensions": false,
-              "resolveJsonModule": true,
-              "baseUrl": ".",
-              "paths": {
-                "@/*": ["./src/*"]
-              }
-            },
-            "include": [
-              "src/utilities/admin-seed.ts",
-              "src/payload.config.ts",
-              "src/access/**/*.ts",
-              "src/blocks/**/*.ts",
-              "src/collections/**/*.ts",
-              "src/fields/**/*.ts",
-              "src/heros/**/*.ts",
-              "src/hooks/**/*.ts",
-              "src/plugins/**/*.ts",
-              "src/search/**/*.ts",
-              "src/utilities/**/*.ts",
-              "src/payload-types.ts"
-            ]
-          }
-          EOF
-
-          # Jalankan kompilasi
-          echo "🔧 Running: npx tsc --project tsconfig.seeder.json"
-          npx tsc --project tsconfig.seeder.json
-
-          echo "🌱 Running compiled seeder script with Node.js..."
-          # Jalankan file .js hasil kompilasi dengan node murni
-          node ./dist-seeder/utilities/admin-seed.js
+          echo "🌱 Running admin seeder script with ts-node..."
+          # Perintah paling sederhana dan klasik untuk ts-node ESM
+          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
+            pnpm exec ts-node --esm src/utilities/admin-seed.ts
+          elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
+            yarn exec ts-node --esm src/utilities/admin-seed.ts
+          else
+            npx ts-node --esm src/utilities/admin-seed.ts
+          fi
 
       # 🏗️ Build Next.js + Payload
       - name: Build Next.js + Payload

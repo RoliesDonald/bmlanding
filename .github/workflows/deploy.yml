@@ -96,14 +96,14 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
-          echo "🌱 Running admin seeder script with ts-node..."
-          # Perintah paling sederhana dan klasik untuk ts-node ESM
+          echo "🌱 Running admin seeder script with tsx..."
+          # Menggunakan tsx, executor TypeScript modern yang lebih andal untuk ESM
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm exec ts-node --esm src/utilities/admin-seed.ts
+            pnpm exec tsx src/utilities/admin-seed.ts
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
-            yarn exec ts-node --esm src/utilities/admin-seed.ts
+            yarn exec tsx src/utilities/admin-seed.ts
           else
-            npx ts-node --esm src/utilities/admin-seed.ts
+            npx tsx src/utilities/admin-seed.ts
           fi
 
       # 🏗️ Build Next.js + Payload

@@ -122,7 +122,18 @@ jobs:
               "noImplicitAny": false
             },
             "include": [
-              "src/**/*"
+              "src/utilities/admin-seed.ts",
+              "src/payload.config.ts",
+              "src/access/**/*.ts",
+              "src/blocks/**/*.ts",
+              "src/collections/**/*.ts",
+              "src/fields/**/*.ts",
+              "src/heros/**/*.ts",
+              "src/hooks/**/*.ts",
+              "src/plugins/**/*.ts",
+              "src/search/**/*.ts",
+              "src/utilities/**/*.ts",
+              "src/payload-types.ts"
             ]
           }
           EOF

@@ -111,8 +111,8 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
-          echo "🌱 Running dedicated admin user seeder script using Payload CLI..."
-          # Tidak perlu install ts-node lagi, karena sudah terinstall di step "Install Dependencies"
+          echo "🌱 Running admin seeder script..."
+          # HANYA SATU PERINTAH INI YANG DIJALANKAN
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
             pnpm exec node --loader ts-node/esm --require tsconfig-paths/register src/utilities/admin-seed.ts
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
@@ -120,10 +120,6 @@ jobs:
           else
             npx ts-node -r tsconfig-paths/register --esm src/utilities/admin-seed.ts
           fi
-
-          echo "🌱 Running dedicated admin user seeder script..."
-          # Menggunakan Node Loader untuk memastikan TS/ESM bekerja
-          node --loader ts-node/esm src/utilities/admin-seed.ts
 
       # 🏗️ Build Next.js + Payload
       - name: Build Next.js + Payload

@@ -114,11 +114,11 @@ jobs:
           echo "🌱 Running admin seeder script..."
           # HANYA SATU PERINTAH INI YANG DIJALANKAN
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm exec node --loader ts-node/esm --require tsconfig-paths/register src/utilities/admin-seed.ts
+            pnpm exec ts-node --esm src/utilities/admin-seed.ts
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
-            yarn exec node --loader ts-node/esm --require tsconfig-paths/register src/utilities/admin-seed.ts
+            yarn exec ts-node --esm src/utilities/admin-seed.ts
           else
-            npx ts-node -r tsconfig-paths/register --esm src/utilities/admin-seed.ts
+            npx ts-node --esm src/utilities/admin-seed.ts
           fi
 
       # 🏗️ Build Next.js + Payload

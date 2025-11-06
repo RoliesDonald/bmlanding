@@ -49,25 +49,6 @@ jobs:
             npm ci
           fi
 
-      # 🔍 Debug: List imports missing .ts extension
-      - name: Debug List imports missing .ts extension
-        run: |
-          echo "🔍 Scanning for imports missing .ts extension..."
-          # Mencari semua file .ts dan .tsx lalu mencari pola import yang bermasalah
-          # Pola: import ... from './path' atau '@/path' yang TIDAK diakhiri .ts
-          FOUND=$(find src -type f \( -name "*.ts" -o -name "*.tsx" \) -exec grep -Hn "from\s\+['\"]\(\.\.?\/\|@\/\)\(?!.*\.ts\)['\"]" {} \;)
-
-          if [ -n "$FOUND" ]; then
-            echo "❌ ERROR : Found import missing the .ts extension"
-            echo "------------------------------------------"
-            echo "$FOUND"
-            echo "------------------------------------------"
-            echo "Please add the .ts extension to these import and commit the changes"
-            exit 1
-          else
-            echo "✅ No import missing the .ts extension"
-          fi
-
       # 🧱 Initialize Payload DB schema (if not exists)
       - name: Initialize Payload Database
         env:
@@ -115,17 +96,47 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
-          echo "🌱 Running admin seeder script with npx ts-node..."
-          # Kembali ke perintah npx ts-node yang lebih klasik dan andal
-          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
-            pnpm exec ts-node --esm -r tsconfig-paths/register src/utilities/admin-seed.ts
-          elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
-            yarn exec ts-node --esm -r tsconfig-paths/register src/utilities/admin-seed.ts
-          else
-            npx ts-node --esm -r tsconfig-paths/register src/utilities/admin-seed.ts
-          fi
+          echo "🌱 Compiling seeder script and dependencies..."
 
-          # Jalankan kompilasi TypeScript menggunakan tsc
+          # Buat file tsconfig sementara yang benar-benar terisolasi
+          cat > tsconfig.seeder.json << EOF
+          {
+            "compilerOptions": {
+              "target": "ES2022",
+              "module": "NodeNext",
+              "moduleResolution": "NodeNext",
+              "outDir": "./dist-seeder",
+              "esModuleInterop": true,
+              "forceConsistentCasingInFileNames": true,
+              "strict": true,
+              "skipLibCheck": true,
+              "noImplicitAny": false,
+              "noEmit": false,
+              "allowImportingTsExtensions": false,
+              "resolveJsonModule": true,
+              "baseUrl": ".",
+              "paths": {
+                "@/*": ["./src/*"]
+              }
+            },
+            "include": [
+              "src/utilities/admin-seed.ts",
+              "src/payload.config.ts",
+              "src/access/**/*.ts",
+              "src/blocks/**/*.ts",
+              "src/collections/**/*.ts",
+              "src/fields/**/*.ts",
+              "src/heros/**/*.ts",
+              "src/hooks/**/*.ts",
+              "src/plugins/**/*.ts",
+              "src/search/**/*.ts",
+              "src/utilities/**/*.ts",
+              "src/payload-types.ts"
+            ]
+          }
+          EOF
+
+          # Jalankan kompilasi
           echo "🔧 Running: npx tsc --project tsconfig.seeder.json"
           npx tsc --project tsconfig.seeder.json
 

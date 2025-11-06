@@ -121,7 +121,8 @@ jobs:
             "compilerOptions": {
               "outDir": "./dist-seeder",
               "noImplicitAny": false,
-              "noEmit": false
+              "noEmit": false,
+              "allowImportingTsExtensions": false
             },
             "include": [
               "src/utilities/admin-seed.ts",

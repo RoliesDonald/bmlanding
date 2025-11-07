@@ -122,13 +122,6 @@ jobs:
             npm run build
           fi
 
-      # 🧳 Prepare deployment package
-      - name: Prepare Deployment Package
-        run: |
-          echo "🔍 DEBUG: Current directory and files before deploy:"
-          zip -r build.zip . -x "*.git*" "node_modules/*" ".github/*"
-          pwd
-          ls -la
 
             # 📤 Deploy to cPanel via FTP
       - name: Deploy to cPanel via FTP

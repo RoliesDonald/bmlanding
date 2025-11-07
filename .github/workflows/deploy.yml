@@ -119,21 +119,52 @@ jobs:
             npm run build
           fi
 
-      # 📤 Deploy to cPanel via FTP
-      - name: Deploy to cPanel via FTP
+      # 📤 Deploy to cPanel via FTP - Main Application
+      - name: Deploy Main Application to cPanel
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: .next/standalone/ # 🔧 UNGGAH DARI FOLDER STANDALONE
+          local-dir: .next/standalone/
           server-dir: /cma.bungmekanik.co.id/
-          # Tambahkan server-dir kedua untuk aset statis
-          server-dir-2: /cma.bungmekanik.co.id/_next/static/
-          local-dir-2: .next/static/
-          # Tambahkan server-dir ketiga untuk folder public
-          server-dir-3: /cma.bungmekanik.co.id/
-          local-dir-3: public/
+          # 🔧 FTP Connection Optimizations
+          security: 'tls'
+          timeout: 300000
+          retries: 3
+          retry-delay: 30
+          exclude: '*.log *.tmp cache/ node_modules/'
+
+      # 📤 Deploy Static Assets to cPanel
+      - name: Deploy Static Assets to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: .next/static/
+          server-dir: /cma.bungmekanik.co.id/_next/static/
+          # 🔧 FTP Connection Optimizations
+          security: 'tls'
+          timeout: 300000
+          retries: 3
+          retry-delay: 30
+
+      # 📤 Deploy Public Files to cPanel
+      - name: Deploy Public Files to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: public/
+          server-dir: /cma.bungmekanik.co.id/
+          # 🔧 FTP Connection Optimizations
+          security: 'tls'
+          timeout: 300000
+          retries: 3
+          retry-delay: 30
+          exclude: '*.log *.tmp cache/'
 
       - name: ✅ Done ya
         run: echo "✅ Build + Seed + Deploy selesai! Akses admin di/admin"

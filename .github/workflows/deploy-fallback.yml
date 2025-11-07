@@ -1,0 +1,105 @@
+name: 🚀 Deploy Payload + Next.js Hybrid (Fallback)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧩 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 🔍 Auto detect package manager
+      - name: Detect Package Manager
+        id: detect-pm
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "manager=pnpm" >> $GITHUB_OUTPUT
+          elif [ -f yarn.lock ]; then
+            echo "manager=yarn" >> $GITHUB_OUTPUT
+          else
+            echo "manager=npm" >> $GITHUB_OUTPUT
+          fi
+          echo "Detected package manager: ${{ steps.detect-pm.outputs.manager }}"
+
+      # ⚙️ Setup pnpm if needed
+      - name: Setup pnpm
+        if: steps.detect-pm.outputs.manager == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # 📦 Install dependencies
+      - name: Install Dependencies
+        run: |
+          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
+            pnpm install --frozen-lockfile
+          elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
+            yarn install --frozen-lockfile
+          else
+            npm ci
+          fi
+
+      # 🏗️ Build Next.js + Payload
+      - name: Build Next.js + Payload
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_BUILD_URL }}
+          PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+          PAYLOAD_PUBLIC_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}
+          PAYLOAD_CONFIG_PATH: src/payload.config.ts
+        run: |
+          if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
+            pnpm run build
+          elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
+            yarn build
+          else
+            npm run build
+          fi
+
+      # 📤 Deploy using LFTP (More robust FTP client)
+      - name: Deploy using LFTP
+        run: |
+          # Install LFTP
+          sudo apt-get update && sudo apt-get install -y lftp
+
+          # Create LFTP script
+          cat << 'EOF' > deploy_script.lftp
+          set ftp:ssl-allow no
+          set ftp:passive-mode on
+          set ftp:list-options -a
+          set net:max-retries 3
+          set net:timeout 30
+          set net:reconnect-interval 30
+          set xfer:clobber on
+
+          open ftp://${{ secrets.CPANEL_FTP_USERNAME }}:${{ secrets.CPANEL_FTP_PASSWORD }}@${{ secrets.CPANEL_FTP_SERVER }}
+
+          # Upload main application
+          mirror --reverse --parallel=3 --delete --verbose .next/standalone/ /cma.bungmekanik.co.id/
+
+          # Upload static assets
+          mirror --reverse --parallel=3 --delete --verbose .next/static/ /cma.bungmekanik.co.id/_next/static/
+
+          # Upload public files
+          mirror --reverse --parallel=3 --delete --verbose public/ /cma.bungmekanik.co.id/
+
+          quit
+          EOF
+
+          # Execute deployment
+          lftp -f deploy_script.lftp
+
+          echo "✅ Deployment completed using LFTP!"
+
+      - name: ✅ Done ya
+        run: echo "✅ Build + Deploy selesai! Akses admin di/admin"

@@ -134,7 +134,7 @@ jobs:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: ./cma.bungmekanik.co.id/ # 🔧 DIPERBAIKI: Ambil isi folder ini
+          local-dir: ./ # 🔧 DIPERBAIKI: Ambil isi folder ini
           server-dir: /cma.bungmekanik.co.id/ # 🔧 DIPERBAIKI: Upload ke folder ini
           exclude: |
             **/.git*

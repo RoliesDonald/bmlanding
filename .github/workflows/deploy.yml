@@ -125,26 +125,34 @@ jobs:
       # 🧳 Prepare deployment package
       - name: Prepare Deployment Package
         run: |
+          echo "🔍 DEBUG: Current directory and files before deploy:"
           zip -r build.zip . -x "*.git*" "node_modules/*" ".github/*"
+          pwd
+          ls -la
 
-      # 📤 Deploy to cPanel via FTP
+            # 📤 Deploy to cPanel via FTP
       - name: Deploy to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: ./ # 🔧 DIPERBAIKI: Ambil isi folder ini
-          server-dir: ./ # 🔧 DIPERBAIKI: Upload ke folder ini
+          local-dir: ./ # Ambil semua file dari root proyek
+          server-dir: ./ # Upload ke folder ini di server
           exclude: |
-            **/.git*
-            **/.github*
-            **/node_modules/**
-            **/dist-seeder/**
-            **/.next/cache/**
-            **/.DS_Store
-            **/Thumbs.db
-            **/*.log
+            .git
+            .git/**
+            .github
+            .github/**
+            node_modules
+            node_modules/**
+            dist-seeder
+            dist-seeder/**
+            .next
+            .next/cache/**
+            .DS_Store
+            Thumbs.db
+            *.log
 
       - name: ✅ Done ya
         run: echo "✅ Build + Seed + Deploy selesai! Akses admin di/admin"

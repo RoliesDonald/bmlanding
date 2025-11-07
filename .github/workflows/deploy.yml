@@ -119,38 +119,6 @@ jobs:
             npm run build
           fi
 
-        # 📦 Prepare deployment package
-      - name: Prepare Deployment Package
-        run: |
-          echo "🔧 Preparing deployment package..."
-          # Buat folder untuk file produksi
-          mkdir deploy
-
-          # Salin hanya file-file yang diperlukan untuk production
-          cp -r .next deploy/
-          cp -r public deploy/
-          cp package.json deploy/
-          cp next.config.js deploy/
-
-          # Buat konfigurasi TypeScript sementara untuk kompilasi config
-          cat > tsconfig.prod.json << EOF
-          {
-            "extends": "./tsconfig.json",
-            "compilerOptions": {
-              "outDir": "./deploy"
-            },
-            "include": [
-              "src/payload.config.ts"
-            ]
-          }
-          EOF
-
-          # Kompilasi payload.config.ts menggunakan konfigurasi ini
-          echo "🔧 Compiling payload.config.ts for production..."
-          npx tsc --project tsconfig.prod.json
-
-          echo "✅ Deployment package is ready."
-
       # 📤 Deploy to cPanel via FTP
       - name: Deploy to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -158,8 +126,14 @@ jobs:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: ./deploy/ # UNGGAH DARI FOLDER INI
-          server-dir: ./ # KE FOLDER INI
+          local-dir: .next/standalone/ # 🔧 UNGGAH DARI FOLDER STANDALONE
+          server-dir: /cma.bungmekanik.co.id/
+          # Tambahkan server-dir kedua untuk aset statis
+          server-dir-2: /cma.bungmekanik.co.id/_next/static/
+          local-dir-2: .next/static/
+          # Tambahkan server-dir ketiga untuk folder public
+          server-dir-3: /cma.bungmekanik.co.id/
+          local-dir-3: public/
 
       - name: ✅ Done ya
         run: echo "✅ Build + Seed + Deploy selesai! Akses admin di/admin"

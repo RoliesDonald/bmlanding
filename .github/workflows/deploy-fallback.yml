@@ -66,32 +66,52 @@ jobs:
             npm run build
           fi
 
-      # 📤 Deploy using LFTP (More robust FTP client)
+      # 🗂️ Optimize deployment size
+      - name: Optimize deployment files
+        run: |
+          echo "🗂️ Optimizing deployment size..."
+          # Remove unnecessary files from standalone build
+          find .next/standalone -name "*.md" -delete
+          find .next/standalone -name "*.txt" -delete
+          find .next/standalone -name "*.log" -delete
+          find .next/standalone -name "README*" -delete
+          find .next/standalone -name ".git*" -delete
+          # Remove test files and development files
+          find .next/standalone -name "*.test.*" -delete
+          find .next/standalone -name "*.spec.*" -delete
+          # Remove development-only directories if they exist
+          rm -rf .next/standalone/tests 2>/dev/null || true
+          rm -rf .next/standalone/.git 2>/dev/null || true
+          echo "✅ Deployment optimization complete"
+
+      # 📤 Deploy using LFTP (Optimized for cPanel Dewaweb)
       - name: Deploy using LFTP
         run: |
           # Install LFTP
           sudo apt-get update && sudo apt-get install -y lftp
 
-          # Create LFTP script
+          # Create optimized LFTP script
           cat << 'EOF' > deploy_script.lftp
           set ftp:ssl-allow no
           set ftp:passive-mode on
           set ftp:list-options -a
-          set net:max-retries 3
-          set net:timeout 30
+          set net:max-retries 2
+          set net:timeout 60
           set net:reconnect-interval 30
           set xfer:clobber on
+          set mirror:use-pget-n 5
+          set mirror:parallel-transfer-count 3
 
           open ftp://${{ secrets.CPANEL_FTP_USERNAME }}:${{ secrets.CPANEL_FTP_PASSWORD }}@${{ secrets.CPANEL_FTP_SERVER }}
 
-          # Upload main application
-          mirror --reverse --parallel=3 --delete --verbose .next/standalone/ /cma.bungmekanik.co.id/
+          # Upload main application without deleting problematic directories
+          mirror --reverse --parallel=3 --verbose --ignore-time --no-perms .next/standalone/ /cma.bungmekanik.co.id/
 
           # Upload static assets
-          mirror --reverse --parallel=3 --delete --verbose .next/static/ /cma.bungmekanik.co.id/_next/static/
+          mirror --reverse --parallel=2 --verbose --ignore-time --no-perms .next/static/ /cma.bungmekanik.co.id/_next/static/
 
-          # Upload public files
-          mirror --reverse --parallel=3 --delete --verbose public/ /cma.bungmekanik.co.id/
+          # Upload essential public files only
+          mirror --reverse --parallel=2 --verbose --ignore-time --no-perms --exclude-glob="*.log" --exclude-glob="*.tmp" --exclude-glob="cache/" --exclude-glob="src/" --exclude-glob="components/" public/ /cma.bungmekanik.co.id/
 
           quit
           EOF

@@ -119,8 +119,26 @@ jobs:
             npm run build
           fi
 
-      # 📤 Deploy to cPanel via FTP - Main Application
-      - name: Deploy Main Application to cPanel
+      # 🗂️ Optimize deployment size
+      - name: Optimize deployment files
+        run: |
+          echo "🗂️ Optimizing deployment size..."
+          # Remove unnecessary files from standalone build
+          find .next/standalone -name "*.md" -delete
+          find .next/standalone -name "*.txt" -delete
+          find .next/standalone -name "*.log" -delete
+          find .next/standalone -name "README*" -delete
+          find .next/standalone -name ".git*" -delete
+          # Remove test files and development files
+          find .next/standalone -name "*.test.*" -delete
+          find .next/standalone -name "*.spec.*" -delete
+          # Remove development-only directories if they exist
+          rm -rf .next/standalone/tests 2>/dev/null || true
+          rm -rf .next/standalone/.git 2>/dev/null || true
+          echo "✅ Deployment optimization complete"
+
+      # 📤 Deploy to cPanel via FTP - Optimized Single Deployment
+      - name: Deploy to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
@@ -128,14 +146,13 @@ jobs:
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
           local-dir: .next/standalone/
           server-dir: /cma.bungmekanik.co.id/
-          # 🔧 FTP Connection Optimizations
-          security: 'tls'
+          # 🔧 Valid FTP parameters for FTP-Deploy-Action v4.3.4
+          security: 'loose'
           timeout: 300000
-          retries: 3
-          retry-delay: 30
-          exclude: '*.log *.tmp cache/ node_modules/'
+          log-level: 'verbose'
+          exclude: '*.log *.tmp cache/ node_modules/ tests/ *.md *.txt'
 
-      # 📤 Deploy Static Assets to cPanel
+      # 📤 Deploy Static Assets separately
       - name: Deploy Static Assets to cPanel
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -144,14 +161,12 @@ jobs:
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
           local-dir: .next/static/
           server-dir: /cma.bungmekanik.co.id/_next/static/
-          # 🔧 FTP Connection Optimizations
-          security: 'tls'
-          timeout: 300000
-          retries: 3
-          retry-delay: 30
+          security: 'loose'
+          timeout: 180000
+          log-level: 'minimal'
 
-      # 📤 Deploy Public Files to cPanel
-      - name: Deploy Public Files to cPanel
+      # 📤 Deploy Public Files (only essential files)
+      - name: Deploy Essential Public Files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
@@ -159,12 +174,10 @@ jobs:
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
           local-dir: public/
           server-dir: /cma.bungmekanik.co.id/
-          # 🔧 FTP Connection Optimizations
-          security: 'tls'
-          timeout: 300000
-          retries: 3
-          retry-delay: 30
-          exclude: '*.log *.tmp cache/'
+          security: 'loose'
+          timeout: 120000
+          log-level: 'minimal'
+          exclude: '*.log *.tmp cache/ src/ components/'
 
       - name: ✅ Done ya
         run: echo "✅ Build + Seed + Deploy selesai! Akses admin di/admin"

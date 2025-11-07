@@ -119,6 +119,23 @@ jobs:
             npm run build
           fi
 
+      # 📦 Prepare deployment package
+      - name: Prepare Deployment Package
+        run: |
+          echo "🔧 Preparing deployment package..."
+          # Buat folder untuk file produksi
+          mkdir deploy
+
+          # Salin hanya file-file yang diperlukan untuk production
+          cp -r .next deploy/
+          cp -r public deploy/
+          cp package.json deploy/
+          cp next.config.js deploy/
+          cp payload.config.js deploy/
+
+          echo "✅ Deployment package is ready:"
+          ls -la deploy
+
       # 📤 Deploy to cPanel via FTP
       - name: Deploy to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -126,18 +143,8 @@ jobs:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: ./
-          server-dir: ./
-          exclude: |
-            .git/**
-            .github/**
-            node_modules/**
-            dist-seeder/**
-            .next/cache/**
-            .DS_Store
-            Thumbs.db
-            *.log
-            .env*
+          local-dir: ./deploy/ # UNGGAH DARI FOLDER INI
+          server-dir: ./ # KE FOLDER INI
 
       - name: ✅ Done ya
         run: echo "✅ Build + Seed + Deploy selesai! Akses admin di/admin"

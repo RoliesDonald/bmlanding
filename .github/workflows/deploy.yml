@@ -132,9 +132,22 @@ jobs:
           cp package.json deploy/
           cp next.config.js deploy/
 
-          # KOMPILASI payload.config.ts menjadi .js untuk production
+          # Buat konfigurasi TypeScript sementara untuk kompilasi config
+          cat > tsconfig.prod.json << EOF
+          {
+            "extends": "./tsconfig.json",
+            "compilerOptions": {
+              "outDir": "./deploy"
+            },
+            "include": [
+              "src/payload.config.ts"
+            ]
+          }
+          EOF
+
+          # Kompilasi payload.config.ts menggunakan konfigurasi ini
           echo "🔧 Compiling payload.config.ts for production..."
-          npx tsc src/payload.config.ts --outDir deploy --moduleResolution node --esModuleInterop
+          npx tsc --project tsconfig.prod.json
 
           echo "✅ Deployment package is ready."
 

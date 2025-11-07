@@ -119,7 +119,7 @@ jobs:
             npm run build
           fi
 
-      # 📦 Prepare deployment package
+        # 📦 Prepare deployment package
       - name: Prepare Deployment Package
         run: |
           echo "🔧 Preparing deployment package..."
@@ -131,10 +131,12 @@ jobs:
           cp -r public deploy/
           cp package.json deploy/
           cp next.config.js deploy/
-          cp payload.config.js deploy/
 
-          echo "✅ Deployment package is ready:"
-          ls -la deploy
+          # KOMPILASI payload.config.ts menjadi .js untuk production
+          echo "🔧 Compiling payload.config.ts for production..."
+          npx tsc src/payload.config.ts --outDir deploy --moduleResolution node --esModuleInterop
+
+          echo "✅ Deployment package is ready."
 
       # 📤 Deploy to cPanel via FTP
       - name: Deploy to cPanel via FTP

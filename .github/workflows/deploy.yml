@@ -1,4 +1,4 @@
-name: 🚀 Deploy Payload + Next.js Hybrid (Auto Init + Seed + FTP Upload)
+name: 🚀 Deploy Payload + Next.js Hybrid
 
 on:
   push:
@@ -56,10 +56,8 @@ jobs:
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           PAYLOAD_CONFIG_PATH: src/payload.config.ts
         run: |
-          # PASTIKAN folder migrations selalu ada sebagai langkah pencegahan
           echo "🔧 Ensuring migrations directory exists..."
           mkdir -p src/migrations
-
           echo "🔍 Checking if 'posts' table exists..."
           node -e "
           import pg from 'pg';
@@ -97,7 +95,6 @@ jobs:
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
         run: |
           echo "🌱 Running admin seeder script with tsx..."
-          # Menggunakan tsx, executor TypeScript modern yang lebih andal untuk ESM
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
             pnpm exec tsx src/utilities/admin-seed.ts
           elif [ "${{ steps.detect-pm.outputs.manager }}" = "yarn" ]; then
@@ -122,30 +119,32 @@ jobs:
             npm run build
           fi
 
+      # 📦 Prepare deployment package
+      - name: Prepare Deployment Package
+        run: |
+          echo "🔧 Preparing deployment package..."
+          # Buat folder sementara untuk paket deployment
+          mkdir deploy-package
 
-            # 📤 Deploy to cPanel via FTP
+          # Salin file-file penting ke folder deployment
+          cp -r public deploy-package/
+          cp -r .next deploy-package/
+          cp -r src/payload-types.ts deploy-package/
+          cp package.json deploy-package/
+          cp payload.config.js deploy-package/ # Salin file config yang sudah di-build
+          cp next.config.js deploy-package/
+
+          echo "✅ Deployment package ready."
+
+      # 📤 Deploy to cPanel via FTP
       - name: Deploy to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.CPANEL_FTP_SERVER }}
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: ./ # Ambil semua file dari root proyek
-          server-dir: ./ # Upload ke folder ini di server
-          exclude: |
-            .git
-            .git/**
-            .github
-            .github/**
-            node_modules
-            node_modules/**
-            dist-seeder
-            dist-seeder/**
-            .next
-            .next/cache/**
-            .DS_Store
-            Thumbs.db
-            *.log
+          local-dir: ./deploy-package/ # 🔧 UNGGAH ISI FOLDER INI
+          server-dir: ./ # 🔧 KE FOLDER YANG BENAR
 
       - name: ✅ Done ya
         run: echo "✅ Build + Seed + Deploy selesai! Akses admin di/admin"

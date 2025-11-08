@@ -18,6 +18,7 @@ import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL.ts'
 import { Customer } from './collections/Customers/Customers.ts'
 import { Gallery } from './collections/Gallery/Gallery.ts'
+import { Forms } from './collections/Forms.ts'
 import { connect } from 'http2'
 
 const filename = fileURLToPath(import.meta.url)
@@ -98,10 +99,10 @@ const baseConfig = {
   },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
-  collections: [Pages, Posts, Media, Categories, Users, Customer, Gallery],
+  collections: [Pages, Posts, Media, Categories, Users, Customer, Gallery, Forms],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
-  plugins: [...plugins],
+  plugins: isMockBuild ? [] : [...plugins],
   // secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {
@@ -129,7 +130,12 @@ const baseConfig = {
   },
 }
 
+const mockDb = {
+  init: () => Promise.resolve(),
+  // Add other methods if needed
+}
+
 export default buildConfig({
   ...baseConfig,
-  db: dbAdapter || ({} as any),
+  db: dbAdapter || (mockDb as any),
 })

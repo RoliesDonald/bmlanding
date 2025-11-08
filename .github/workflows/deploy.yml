@@ -1,4 +1,4 @@
-name: 🚀 Build Payload + Next.js for Manual Upload
+name: 🚀 Build Payload + Next.js for Manual Upload cPanel
 
 on:
   push:
@@ -179,5 +179,17 @@ jobs:
           echo "📁 Ready for manual upload via FileZilla"
           echo "📋 See UPLOAD_INSTRUCTIONS.txt for details"
 
+      # 📦 Upload artifacts for download
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-files
+          path: |
+            DEPLOY_STANDALONE/
+            DEPLOY_STATIC/
+            DEPLOY_PUBLIC/
+            UPLOAD_INSTRUCTIONS.txt
+          retention-days: 1
+
       - name: ✅ Build Complete
-        run: echo "✅ Build selesai! Folder siap diupload manual via FileZilla"
+        run: echo "✅ Build selesai! Download artifacts dan upload manual via FileZilla"

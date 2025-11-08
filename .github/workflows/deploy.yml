@@ -104,6 +104,7 @@ jobs:
           PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
           PAYLOAD_PUBLIC_URL: ${{ secrets.PAYLOAD_PUBLIC_URL }}
           PAYLOAD_CONFIG_PATH: src/payload.config.ts
+          PAYLOAD_BUILD_MOCK: true
         run: |
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
             pnpm run build

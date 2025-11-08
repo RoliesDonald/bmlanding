@@ -20,6 +20,17 @@ export const getMediaUrl = (url: string | null | undefined, cacheTag?: string | 
     return staticUrl
   }
 
+  // Use static URLs for media instead of API to avoid loading issues
+  if (url.startsWith('/api/media/')) {
+    const staticUrl = url.replace('/api/media/', '/media/')
+
+    if (cacheTag && cacheTag !== '') {
+      cacheTag = encodeURIComponent(cacheTag)
+      return `${staticUrl}?${cacheTag}`
+    }
+    return staticUrl
+  }
+
   if (cacheTag && cacheTag !== '') {
     cacheTag = encodeURIComponent(cacheTag)
   }

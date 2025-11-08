@@ -132,7 +132,26 @@ jobs:
           # Copy optimized standalone files
           cp -r .next/standalone/* DEPLOY_STANDALONE/
 
-          # Copy static files
+          # Copy next.js static files to standalone
+          mkdir -p DEPLOY_STANDALONE/.next
+          cp -r .next/static DEPLOY_STANDALONE/.next/
+
+          # Copy public files to standalone
+          mkdir -p DEPLOY_STANDALONE/public
+          cp -r public/* DEPLOY_STANDALONE/public/
+
+          # Copy payload config and utilities
+          mkdir -p DEPLOY_STANDALONE/src
+          cp -r src/collections DEPLOY_STANDALONE/src/
+          cp -r src/utilities DEPLOY_STANDALONE/src/
+          cp -r src/plugins DEPLOY_STANDALONE/src/
+          cp -r src/fields DEPLOY_STANDALONE/src/
+          cp -r src/access DEPLOY_STANDALONE/src/
+          cp -r src/hooks DEPLOY_STANDALONE/src/
+          cp -r src/styles DEPLOY_STANDALONE/src/
+          cp src/payload.config.ts DEPLOY_STANDALONE/src/
+
+          # Copy static files for separate upload
           cp -r .next/static/* DEPLOY_STATIC/
 
           # Copy public files (only essential ones)

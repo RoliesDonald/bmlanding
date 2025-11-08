@@ -4,8 +4,52 @@ PassengerBaseURI "/"
 PassengerNodejs "/home/bungmek1/nodevenv/public_html/cms.bungmekanik.co.id/20/bin/node"
 PassengerAppType node
 PassengerStartupFile server.js
-
-# Tambahan untuk Stabilitas
 PassengerNodeEnv production
-PassengerStartupTimeout 60 
+PassengerStartupTimeout 120
+PassengerMinInstances 1
+PassengerMaxInstances 3
+PassengerMaxRequestQueueSize 100
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+
+# Additional security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options SAMEORIGIN
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Enable compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css application/xml application/javascript application/x-javascript text/javascript
+</IfModule>
+
+# Handle static files
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/svg "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType application/x-javascript "access plus 1 month"
+</IfModule>
+
+# Redirect to HTTPS if not already HTTPS
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Handle Next.js routing
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    RewriteRule ^index\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+</IfModule>

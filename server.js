@@ -1,29 +1,36 @@
-import express from 'express'
-import payload from 'payload'
-import next from 'next'
-import dotenv from 'dotenv'
+const { createServer } = require('http')
+const { parse } = require('url')
+const next = require('next')
 
-dotenv.config()
-
-const app = express()
-const port = process.env.PORT || 3000
 const dev = process.env.NODE_ENV !== 'production'
-const nextApp = next({ dev })
-const handle = nextApp.getRequestHandler()
+const hostname = 'localhost'
+const port = process.env.PORT || 3000
 
-nextApp.prepare().then(async () => {
-  await payload.init({
-    secret: process.env.PAYLOAD_SECRET,
-    databaseURL: process.env.DATABASE_URL,
-    express: app,
-    onInit: async () => {
-      payload.logger.info(`Payload Admin URL: ${process.env.PAYLOAD_PUBLIC_URL}/admin`)
-    },
+const app = next({ dev, hostname, port })
+const handle = app.getRequestHandler()
+
+app.prepare().then(() => {
+  createServer(async (req, res) => {
+    try {
+      const parsedUrl = parse(req.url, true)
+      const { pathname, query } = parsedUrl
+
+      if (pathname === '/a') {
+        await app.render(req, res, '/a', query)
+      } else {
+        await handle(req, res, parsedUrl)
+      }
+    } catch (err) {
+      console.error('Error occurred handling', req.url, err)
+      res.statusCode = 500
+      res.end('internal server error')
+    }
   })
-
-  app.use((req, res) => handle(req, res))
-
-  app.listen(port, async () => {
-    console.log(`✅ Server running on port ${port}`)
-  })
+    .once('error', (err) => {
+      console.error(err)
+      process.exit(1)
+    })
+    .listen(port, () => {
+      console.log(`> Ready on http://${hostname}:${port}`)
+    })
 })

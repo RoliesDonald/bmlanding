@@ -125,17 +125,41 @@ jobs:
           # Copy optimized standalone files
           cp -r .next/standalone/* DEPLOY_STANDALONE/
 
-          # Copy .next folder structure to standalone
+          # Copy .next folder structure to standalone - FORCE COPY
           echo "📁 Copying .next folder structure..."
           mkdir -p DEPLOY_STANDALONE/.next
-          cp -r .next/static DEPLOY_STANDALONE/.next/
-          cp -r .next/build-manifest.json DEPLOY_STANDALONE/.next/ 2>/dev/null || true
-          cp -r .next/prerender-manifest.json DEPLOY_STANDALONE/.next/ 2>/dev/null || true
-          cp -r .next/route-manifest.json DEPLOY_STANDALONE/.next/ 2>/dev/null || true
-          cp -r .next/react-loadable-manifest.json DEPLOY_STANDALONE/.next/ 2>/dev/null || true
-          cp -r .next/server DEPLOY_STANDALONE/.next/ 2>/dev/null || true
-          cp -r .next/traces DEPLOY_STANDALONE/.next/ 2>/dev/null || true
-          cp -r .next/cache DEPLOY_STANDALONE/.next/ 2>/dev/null || true
+          if [ -d .next/static ]; then
+            cp -r .next/static DEPLOY_STANDALONE/.next/
+            echo "✅ .next/static copied"
+          fi
+          if [ -f .next/build-manifest.json ]; then
+            cp .next/build-manifest.json DEPLOY_STANDALONE/.next/
+            echo "✅ build-manifest.json copied"
+          fi
+          if [ -f .next/prerender-manifest.json ]; then
+            cp .next/prerender-manifest.json DEPLOY_STANDALONE/.next/
+            echo "✅ prerender-manifest.json copied"
+          fi
+          if [ -f .next/route-manifest.json ]; then
+            cp .next/route-manifest.json DEPLOY_STANDALONE/.next/
+            echo "✅ route-manifest.json copied"
+          fi
+          if [ -f .next/react-loadable-manifest.json ]; then
+            cp .next/react-loadable-manifest.json DEPLOY_STANDALONE/.next/
+            echo "✅ react-loadable-manifest.json copied"
+          fi
+          if [ -d .next/server ]; then
+            cp -r .next/server DEPLOY_STANDALONE/.next/
+            echo "✅ server folder copied"
+          fi
+          if [ -d .next/traces ]; then
+            cp -r .next/traces DEPLOY_STANDALONE/.next/
+            echo "✅ traces folder copied"
+          fi
+          if [ -d .next/cache ]; then
+            cp -r .next/cache DEPLOY_STANDALONE/.next/
+            echo "✅ cache folder copied"
+          fi
 
           # Copy public files to standalone
           mkdir -p DEPLOY_STANDALONE/public
@@ -153,12 +177,15 @@ jobs:
           cp src/payload.config.ts DEPLOY_STANDALONE/src/
 
           # Copy static files for separate upload
-          cp -r .next/static/* DEPLOY_STATIC/
+          if [ -d .next/static ]; then
+            cp -r .next/static/* DEPLOY_STATIC/
+            echo "✅ Static files copied to DEPLOY_STATIC"
+          fi
 
           # Copy public files (only essential ones)
           cp public/*.{ico,svg,png,jpg,jpeg,gif,webp} DEPLOY_PUBLIC/ 2>/dev/null || true
 
-          # Copy .htaccess - FORCE COPY
+          # Copy .htaccess - FORCE COPY with proper syntax
           echo "📄 Copying .htaccess file..."
           if [ -f .htaccess ]; then
             cp .htaccess DEPLOY_PUBLIC/
@@ -168,23 +195,23 @@ jobs:
             echo "❌ .htaccess not found in root directory"
             # Create basic .htaccess if not exists
             cat > .htaccess << 'EOF'
-          # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
-          PassengerAppRoot "/home/bungmek1/public_html/cms.bungmekanik.co.id"
-          PassengerBaseURI "/"
-          PassengerNodejs "/home/bungmek1/nodevenv/public_html/cms.bungmekanik.co.id/20/bin/node"
-          PassengerAppType node
-          PassengerStartupFile server.js
-          PassengerNodeEnv production
-          PassengerStartupTimeout 120
-          PassengerMinInstances 1
-          PassengerMaxInstances 3
-          PassengerMaxRequestQueueSize 100
-          # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
-          EOF
-                      cp .htaccess DEPLOY_PUBLIC/
-                      cp .htaccess DEPLOY_STANDALONE/
-                      echo "📄 Created basic .htaccess"
-                    fi
+            # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+            PassengerAppRoot "/home/bungmek1/public_html/cms.bungmekanik.co.id"
+            PassengerBaseURI "/"
+            PassengerNodejs "/home/bungmek1/nodevenv/public_html/cms.bungmekanik.co.id/20/bin/node"
+            PassengerAppType node
+            PassengerStartupFile server.js
+            PassengerNodeEnv production
+            PassengerStartupTimeout 120
+            PassengerMinInstances 1
+            PassengerMaxInstances 3
+            PassengerMaxRequestQueueSize 100
+            # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+            EOF
+            cp .htaccess DEPLOY_PUBLIC/
+            cp .htaccess DEPLOY_STANDALONE/
+            echo "📄 Created basic .htaccess"
+          fi
 
           # Remove unnecessary files
           find DEPLOY_STANDALONE -name "*.md" -delete
@@ -202,13 +229,33 @@ jobs:
           echo "📁 DEPLOY_STANDALONE contents:"
           ls -la DEPLOY_STANDALONE/
           echo "📁 .next folder in DEPLOY_STANDALONE:"
-          ls -la DEPLOY_STANDALONE/.next/ 2>/dev/null || echo "❌ .next folder missing"
+          if [ -d DEPLOY_STANDALONE/.next ]; then
+            ls -la DEPLOY_STANDALONE/.next/
+            echo "✅ .next folder exists"
+          else
+            echo "❌ .next folder missing"
+          fi
           echo "📁 Static folder in DEPLOY_STANDALONE/.next:"
-          ls -la DEPLOY_STANDALONE/.next/static/ 2>/dev/null || echo "❌ Static folder missing"
+          if [ -d DEPLOY_STANDALONE/.next/static ]; then
+            ls -la DEPLOY_STANDALONE/.next/static/
+            echo "✅ Static folder exists"
+          else
+            echo "❌ Static folder missing"
+          fi
           echo "📄 .htaccess in DEPLOY_STANDALONE:"
-          ls -la DEPLOY_STANDALONE/.htaccess 2>/dev/null || echo "❌ .htaccess missing in DEPLOY_STANDALONE"
+          if [ -f DEPLOY_STANDALONE/.htaccess ]; then
+            ls -la DEPLOY_STANDALONE/.htaccess
+            echo "✅ .htaccess exists in DEPLOY_STANDALONE"
+          else
+            echo "❌ .htaccess missing in DEPLOY_STANDALONE"
+          fi
           echo "📄 .htaccess in DEPLOY_PUBLIC:"
-          ls -la DEPLOY_PUBLIC/.htaccess 2>/dev/null || echo "❌ .htaccess missing in DEPLOY_PUBLIC"
+          if [ -f DEPLOY_PUBLIC/.htaccess ]; then
+            ls -la DEPLOY_PUBLIC/.htaccess
+            echo "✅ .htaccess exists in DEPLOY_PUBLIC"
+          else
+            echo "❌ .htaccess missing in DEPLOY_PUBLIC"
+          fi
 
           # Create upload instructions
           cat > UPLOAD_INSTRUCTIONS.txt << 'EOF'

@@ -132,9 +132,17 @@ jobs:
           # Copy optimized standalone files
           cp -r .next/standalone/* DEPLOY_STANDALONE/
 
-          # Copy next.js static files to standalone
+          # Copy .next folder structure to standalone
+          echo "📁 Copying .next folder structure..."
           mkdir -p DEPLOY_STANDALONE/.next
           cp -r .next/static DEPLOY_STANDALONE/.next/
+          cp -r .next/build-manifest.json DEPLOY_STANDALONE/.next/ 2>/dev/null || true
+          cp -r .next/prerender-manifest.json DEPLOY_STANDALONE/.next/ 2>/dev/null || true
+          cp -r .next/route-manifest.json DEPLOY_STANDALONE/.next/ 2>/dev/null || true
+          cp -r .next/react-loadable-manifest.json DEPLOY_STANDALONE/.next/ 2>/dev/null || true
+          cp -r .next/server DEPLOY_STANDALONE/.next/ 2>/dev/null || true
+          cp -r .next/traces DEPLOY_STANDALONE/.next/ 2>/dev/null || true
+          cp -r .next/cache DEPLOY_STANDALONE/.next/ 2>/dev/null || true
 
           # Copy public files to standalone
           mkdir -p DEPLOY_STANDALONE/public
@@ -171,6 +179,12 @@ jobs:
           rm -rf DEPLOY_STANDALONE/tests 2>/dev/null || true
           rm -rf DEPLOY_STANDALONE/.git 2>/dev/null || true
 
+          # Verify .next folder structure
+          echo "🔍 Verifying .next folder structure..."
+          ls -la DEPLOY_STANDALONE/.next/
+          echo "🔍 Static folder contents:"
+          ls -la DEPLOY_STANDALONE/.next/static/ 2>/dev/null || echo "Static folder not found"
+
           # Create upload instructions
           cat > UPLOAD_INSTRUCTIONS.txt << 'EOF'
           MANUAL UPLOAD INSTRUCTIONS:
@@ -187,6 +201,10 @@ jobs:
           Folder Structure:
           /cms.bungmekanik.co.id/
           ├── [standalone files]
+          ├── .next/
+          │   ├── static/
+          │   ├── server/
+          │   └── [other next files]
           ├── _next/static/
           │   └── [static files]
           └── [public files & .htaccess]

@@ -44,7 +44,7 @@ if (!isMockBuild) {
 
 // const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH
 
-export default buildConfig({
+const baseConfig = {
   secret: secretKey!,
   serverURL: NEXT_PUBLIC_SERVER_URL,
   routes: {
@@ -98,8 +98,9 @@ export default buildConfig({
   },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
-  db: dbAdapter!,
-  collections: isMockBuild ? [] : [Pages, Posts, Media, Categories, Users, Customer, Gallery],
+  collections: isMockBuild
+    ? [Users, Pages, Customer]
+    : [Pages, Posts, Media, Categories, Users, Customer, Gallery],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins: isMockBuild ? [] : [...plugins],
@@ -121,11 +122,16 @@ export default buildConfig({
     },
     tasks: [],
   },
-  onInit: async (payload) => {
+  onInit: async (payload: any) => {
     if (isMockBuild) {
       payload.logger.info('⚙️ PAYLOAD_BUILD_MOCK active — skipping DB connection & collections')
     } else {
       payload.logger.info('✅ Payload initialized with DB connection')
     }
   },
+}
+
+export default buildConfig({
+  ...baseConfig,
+  db: dbAdapter || ({} as any),
 })

@@ -2,9 +2,6 @@ name: 🚀 Deploy Payload + Next.js Hybrid (Fallback)
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   deploy:

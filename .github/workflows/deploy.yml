@@ -137,7 +137,21 @@ jobs:
           rm -rf .next/standalone/.git 2>/dev/null || true
           echo "✅ Deployment optimization complete"
 
-      # 📤 Deploy to cPanel via FTP - Optimized Single Deployment
+      # 🧹 Cleanup incorrect directory if exists
+      - name: Cleanup incorrect deployment directory
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: /cma.bungmekanik.co.id/
+          security: 'loose'
+          timeout: 60000
+          log-level: 'minimal'
+          dangerous-clean-slate: true
+
+      # 📤 Deploy to cPanel via FTP - Correct Domain
       - name: Deploy to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
@@ -145,7 +159,7 @@ jobs:
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
           local-dir: .next/standalone/
-          server-dir: /cma.bungmekanik.co.id/
+          server-dir: /cms.bungmekanik.co.id/
           # 🔧 Valid FTP parameters for FTP-Deploy-Action v4.3.4
           security: 'loose'
           timeout: 300000
@@ -160,7 +174,7 @@ jobs:
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
           local-dir: .next/static/
-          server-dir: /cma.bungmekanik.co.id/_next/static/
+          server-dir: /cms.bungmekanik.co.id/_next/static/
           security: 'loose'
           timeout: 180000
           log-level: 'minimal'
@@ -173,11 +187,26 @@ jobs:
           username: ${{ secrets.CPANEL_FTP_USERNAME }}
           password: ${{ secrets.CPANEL_FTP_PASSWORD }}
           local-dir: public/
-          server-dir: /cma.bungmekanik.co.id/
+          server-dir: /cms.bungmekanik.co.id/
           security: 'loose'
           timeout: 120000
           log-level: 'minimal'
           exclude: '*.log *.tmp cache/ src/ components/'
+
+      # 📤 Deploy .htaccess file for cPanel Passenger
+      - name: Deploy .htaccess Configuration
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: /cms.bungmekanik.co.id/
+          security: 'loose'
+          timeout: 60000
+          log-level: 'minimal'
+          exclude: '*'
+          include: '.htaccess'
 
       - name: ✅ Done ya
         run: echo "✅ Build + Seed + Deploy selesai! Akses admin di/admin"

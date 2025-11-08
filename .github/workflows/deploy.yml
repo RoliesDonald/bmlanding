@@ -137,61 +137,66 @@ jobs:
           rm -rf .next/standalone/.git 2>/dev/null || true
           echo "✅ Deployment optimization complete"
 
-      # 📤 Deploy using FTP with correct cPanel paths
-      - name: Deploy to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.CPANEL_FTP_SERVER }}
-          username: ${{ secrets.CPANEL_FTP_USERNAME }}
-          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: .next/standalone/
-          server-dir: cms.bungmekanik.co.id/
-          security: 'loose'
-          timeout: 300000
-          log-level: 'verbose'
-          exclude: '*.log *.tmp cache/ node_modules/ tests/ *.md *.txt'
+      # 📤 Final Deploy using LFTP (Most Reliable)
+      - name: Deploy to cPanel using LFTP
+        run: |
+          # Install LFTP
+          sudo apt-get update && sudo apt-get install -y lftp
 
-      # 📤 Deploy Static Assets
-      - name: Deploy Static Assets to cPanel
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.CPANEL_FTP_SERVER }}
-          username: ${{ secrets.CPANEL_FTP_USERNAME }}
-          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: .next/static/
-          server-dir: cms.bungmekanik.co.id/_next/static/
-          security: 'loose'
-          timeout: 180000
-          log-level: 'minimal'
+          # Create LFTP script with robust settings
+          cat << 'EOF' > deploy_script.lftp
+          set ftp:ssl-allow no
+          set ftp:passive-mode on
+          set ftp:list-options -a
+          set net:max-retries 3
+          set net:timeout 120
+          set net:reconnect-interval 30
+          set net:connection-limit 1
+          set xfer:clobber on
+          set mirror:use-pget-n 1
+          set mirror:parallel-transfer-count 1
+          set ssl:verify-certificate no
 
-      # 📤 Deploy Public Files
-      - name: Deploy Public Files to cPanel
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.CPANEL_FTP_SERVER }}
-          username: ${{ secrets.CPANEL_FTP_USERNAME }}
-          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: public/
-          server-dir: cms.bungmekanik.co.id/
-          security: 'loose'
-          timeout: 120000
-          log-level: 'minimal'
-          exclude: '*.log *.tmp cache/ src/ components/'
+          # Connect to FTP server
+          open ftp://${{ secrets.CPANEL_FTP_USERNAME }}:${{ secrets.CPANEL_FTP_PASSWORD }}@${{ secrets.CPANEL_FTP_SERVER }}
 
-      # 📤 Deploy .htaccess file
-      - name: Deploy .htaccess Configuration
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.CPANEL_FTP_SERVER }}
-          username: ${{ secrets.CPANEL_FTP_USERNAME }}
-          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: ./
-          server-dir: cms.bungmekanik.co.id/
-          security: 'loose'
-          timeout: 60000
-          log-level: 'minimal'
-          exclude: '*'
-          include: '.htaccess'
+          # Create directories first
+          mkdir -f cms.bungmekanik.co.id
+          mkdir -f cms.bungmekanik.co.id/_next
+          mkdir -f cms.bungmekanik.co.id/_next/static
+
+          # Upload standalone application (single thread for stability)
+          echo "📤 Uploading standalone application..."
+          mirror --reverse --verbose --ignore-time --no-perms --parallel=1 .next/standalone/ cms.bungmekanik.co.id/
+
+          # Upload static assets
+          echo "📤 Uploading static assets..."
+          mirror --reverse --verbose --ignore-time --no-perms --parallel=1 .next/static/ cms.bungmekanik.co.id/_next/static/
+
+          # Upload public files
+          echo "📤 Uploading public files..."
+          mirror --reverse --verbose --ignore-time --no-perms --parallel=1 --exclude-glob="*.log" --exclude-glob="*.tmp" --exclude-glob="cache/" --exclude-glob="src/" --exclude-glob="components/" public/ cms.bungmekanik.co.id/
+
+          # Upload .htaccess
+          echo "📤 Uploading .htaccess..."
+          put .htaccess cms.bungmekanik.co.id/.htaccess
+
+          quit
+          EOF
+
+          # Execute deployment with retry
+          for i in {1..3}; do
+            echo "🚀 Deployment attempt $i of 3..."
+            if lftp -f deploy_script.lftp; then
+              echo "✅ Deployment successful!"
+              break
+            else
+              echo "❌ Deployment attempt $i failed. Retrying in 30 seconds..."
+              sleep 30
+            fi
+          done
+
+          echo "✅ LFTP deployment completed!"
 
       - name: ✅ Done ya
         run: echo "✅ Build + Deploy selesai! Akses admin di/admin"

@@ -98,9 +98,7 @@ const baseConfig = {
   },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
-  collections: isMockBuild
-    ? [Users, Pages, Customer]
-    : [Pages, Posts, Media, Categories, Users, Customer, Gallery],
+  collections: [Pages, Posts, Media, Categories, Users, Customer, Gallery],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
   plugins: isMockBuild ? [] : [...plugins],

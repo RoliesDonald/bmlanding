@@ -165,8 +165,33 @@ jobs:
           # Copy public files (only essential ones)
           cp public/*.{ico,svg,png,jpg,jpeg,gif,webp} DEPLOY_PUBLIC/ 2>/dev/null || true
 
-          # Copy .htaccess
-          cp .htaccess DEPLOY_PUBLIC/
+          # Copy .htaccess - FORCE COPY
+          echo "📄 Copying .htaccess file..."
+          if [ -f .htaccess ]; then
+            cp .htaccess DEPLOY_PUBLIC/
+            cp .htaccess DEPLOY_STANDALONE/
+            echo "✅ .htaccess copied successfully"
+          else
+            echo "❌ .htaccess not found in root directory"
+            # Create basic .htaccess if not exists
+            cat > .htaccess << 'EOF'
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/bungmek1/public_html/cms.bungmekanik.co.id"
+PassengerBaseURI "/"
+PassengerNodejs "/home/bungmek1/nodevenv/public_html/cms.bungmekanik.co.id/20/bin/node"
+PassengerAppType node
+PassengerStartupFile server.js
+PassengerNodeEnv production
+PassengerStartupTimeout 120
+PassengerMinInstances 1
+PassengerMaxInstances 3
+PassengerMaxRequestQueueSize 100
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+EOF
+            cp .htaccess DEPLOY_PUBLIC/
+            cp .htaccess DEPLOY_STANDALONE/
+            echo "📄 Created basic .htaccess"
+          fi
 
           # Remove unnecessary files
           find DEPLOY_STANDALONE -name "*.md" -delete
@@ -179,11 +204,18 @@ jobs:
           rm -rf DEPLOY_STANDALONE/tests 2>/dev/null || true
           rm -rf DEPLOY_STANDALONE/.git 2>/dev/null || true
 
-          # Verify .next folder structure
-          echo "🔍 Verifying .next folder structure..."
-          ls -la DEPLOY_STANDALONE/.next/
-          echo "🔍 Static folder contents:"
-          ls -la DEPLOY_STANDALONE/.next/static/ 2>/dev/null || echo "Static folder not found"
+          # Verify all folders and files
+          echo "🔍 Verifying all folders and files..."
+          echo "📁 DEPLOY_STANDALONE contents:"
+          ls -la DEPLOY_STANDALONE/
+          echo "📁 .next folder in DEPLOY_STANDALONE:"
+          ls -la DEPLOY_STANDALONE/.next/ 2>/dev/null || echo "❌ .next folder missing"
+          echo "📁 Static folder in DEPLOY_STANDALONE/.next:"
+          ls -la DEPLOY_STANDALONE/.next/static/ 2>/dev/null || echo "❌ Static folder missing"
+          echo "📄 .htaccess in DEPLOY_STANDALONE:"
+          ls -la DEPLOY_STANDALONE/.htaccess 2>/dev/null || echo "❌ .htaccess missing in DEPLOY_STANDALONE"
+          echo "📄 .htaccess in DEPLOY_PUBLIC:"
+          ls -la DEPLOY_PUBLIC/.htaccess 2>/dev/null || echo "❌ .htaccess missing in DEPLOY_PUBLIC"
 
           # Create upload instructions
           cat > UPLOAD_INSTRUCTIONS.txt << 'EOF'
@@ -207,7 +239,9 @@ jobs:
           │   └── [other next files]
           ├── _next/static/
           │   └── [static files]
-          └── [public files & .htaccess]
+          ├── public/
+          │   └── [public files]
+          └── .htaccess
 
           After upload, access: https://cms.bungmekanik.co.id/admin
           EOF

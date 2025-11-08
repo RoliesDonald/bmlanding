@@ -81,7 +81,7 @@ jobs:
           rm -rf .next/standalone/.git 2>/dev/null || true
           echo "✅ Deployment optimization complete"
 
-      # 📤 Deploy using LFTP (Optimized for cPanel Dewaweb)
+      # 📤 Deploy using LFTP to correct domain
       - name: Deploy using LFTP
         run: |
           # Install LFTP
@@ -101,14 +101,14 @@ jobs:
 
           open ftp://${{ secrets.CPANEL_FTP_USERNAME }}:${{ secrets.CPANEL_FTP_PASSWORD }}@${{ secrets.CPANEL_FTP_SERVER }}
 
-          # Upload main application without deleting problematic directories
-          mirror --reverse --parallel=3 --verbose --ignore-time --no-perms .next/standalone/ /cma.bungmekanik.co.id/
+          # Upload main application to correct domain
+          mirror --reverse --parallel=3 --verbose --ignore-time --no-perms .next/standalone/ /cms.bungmekanik.co.id/
 
           # Upload static assets
-          mirror --reverse --parallel=2 --verbose --ignore-time --no-perms .next/static/ /cma.bungmekanik.co.id/_next/static/
+          mirror --reverse --parallel=2 --verbose --ignore-time --no-perms .next/static/ /cms.bungmekanik.co.id/_next/static/
 
           # Upload essential public files only
-          mirror --reverse --parallel=2 --verbose --ignore-time --no-perms --exclude-glob="*.log" --exclude-glob="*.tmp" --exclude-glob="cache/" --exclude-glob="src/" --exclude-glob="components/" public/ /cma.bungmekanik.co.id/
+          mirror --reverse --parallel=2 --verbose --ignore-time --no-perms --exclude-glob="*.log" --exclude-glob="*.tmp" --exclude-glob="cache/" --exclude-glob="src/" --exclude-glob="components/" public/ /cms.bungmekanik.co.id/
 
           quit
           EOF

@@ -137,19 +137,11 @@ jobs:
           rm -rf .next/standalone/.git 2>/dev/null || true
           echo "✅ Deployment optimization complete"
 
-      # 🧹 Cleanup incorrect directory if exists
-      - name: Cleanup incorrect deployment directory
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.CPANEL_FTP_SERVER }}
-          username: ${{ secrets.CPANEL_FTP_USERNAME }}
-          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
-          local-dir: ./
-          server-dir: /cma.bungmekanik.co.id/
-          security: 'loose'
-          timeout: 60000
-          log-level: 'minimal'
-          dangerous-clean-slate: true
+      # 🧹 Skip problematic cleanup - deploy directly to correct domain
+      - name: Skip Cleanup - Deploy Directly
+        run: |
+          echo "🧹 Skipping cleanup to avoid timeout issues..."
+          echo "📂 Will deploy directly to cms.bungmekanik.co.id"
 
       # 📤 Deploy to cPanel via FTP - Correct Domain
       - name: Deploy to cPanel via FTP

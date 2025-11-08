@@ -101,7 +101,7 @@ const baseConfig = {
   collections: [Pages, Posts, Media, Categories, Users, Customer, Gallery],
   cors: [getServerSideURL()].filter(Boolean),
   globals: [Header, Footer],
-  plugins: isMockBuild ? [] : [...plugins],
+  plugins: [...plugins],
   // secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {

@@ -1,8 +1,7 @@
-
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
-PassengerAppRoot "/home/bungmek1/public_html/cms"
-PassengerBaseURI "/cms"
-PassengerNodejs "/home/bungmek1/nodevenv/public_html/cms/20/bin/node"
+PassengerAppRoot "/home/bungmek1/public_html/cma.bungmekanik.co.id"
+PassengerBaseURI "/"
+PassengerNodejs "/home/bungmek1/nodevenv/public_html/cma.bungmekanik.co.id/20/bin/node"
 PassengerAppType node
 PassengerStartupFile server.js
 

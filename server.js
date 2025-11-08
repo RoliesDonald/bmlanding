@@ -14,7 +14,7 @@ const handle = nextApp.getRequestHandler()
 nextApp.prepare().then(async () => {
   await payload.init({
     secret: process.env.PAYLOAD_SECRET,
-    mongoURL: process.env.DATABASE_URL,
+    databaseURL: process.env.DATABASE_URL,
     express: app,
     onInit: async () => {
       payload.logger.info(`Payload Admin URL: ${process.env.PAYLOAD_PUBLIC_URL}/admin`)

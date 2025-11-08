@@ -193,21 +193,19 @@ jobs:
             echo "✅ .htaccess copied successfully"
           else
             echo "❌ .htaccess not found in root directory"
-            # Create basic .htaccess if not exists
-            cat > .htaccess << 'EOF'
-            # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
-            PassengerAppRoot "/home/bungmek1/public_html/cms.bungmekanik.co.id"
-            PassengerBaseURI "/"
-            PassengerNodejs "/home/bungmek1/nodevenv/public_html/cms.bungmekanik.co.id/20/bin/node"
-            PassengerAppType node
-            PassengerStartupFile server.js
-            PassengerNodeEnv production
-            PassengerStartupTimeout 120
-            PassengerMinInstances 1
-            PassengerMaxInstances 3
-            PassengerMaxRequestQueueSize 100
-            # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
-            EOF
+            # Create basic .htaccess if not exists - USE ECHO INSTEAD OF HEREDOC
+            echo "# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN" > .htaccess
+            echo "PassengerAppRoot \"/home/bungmek1/public_html/cms.bungmekanik.co.id\"" >> .htaccess
+            echo "PassengerBaseURI \"/\"" >> .htaccess
+            echo "PassengerNodejs \"/home/bungmek1/nodevenv/public_html/cms.bungmekanik.co.id/20/bin/node\"" >> .htaccess
+            echo "PassengerAppType node" >> .htaccess
+            echo "PassengerStartupFile server.js" >> .htaccess
+            echo "PassengerNodeEnv production" >> .htaccess
+            echo "PassengerStartupTimeout 120" >> .htaccess
+            echo "PassengerMinInstances 1" >> .htaccess
+            echo "PassengerMaxInstances 3" >> .htaccess
+            echo "PassengerMaxRequestQueueSize 100" >> .htaccess
+            echo "# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END" >> .htaccess
             cp .htaccess DEPLOY_PUBLIC/
             cp .htaccess DEPLOY_STANDALONE/
             echo "📄 Created basic .htaccess"
@@ -258,33 +256,31 @@ jobs:
           fi
 
           # Create upload instructions
-          cat > UPLOAD_INSTRUCTIONS.txt << 'EOF'
-          MANUAL UPLOAD INSTRUCTIONS:
-          ========================
-
-          1. Connect via FileZilla to: ${{ secrets.CPANEL_FTP_SERVER }}
-          2. Navigate to: /home/bungmek1/cms.bungmekanik.co.id/
-
-          3. Upload DEPLOY_STANDALONE contents to root folder
-          4. Upload DEPLOY_STATIC contents to _next/static/ folder
-          5. Upload DEPLOY_PUBLIC contents to root folder
-          6. Ensure .htaccess is in root folder
-
-          Folder Structure:
-          /cms.bungmekanik.co.id/
-          ├── [standalone files]
-          ├── .next/
-          │   ├── static/
-          │   ├── server/
-          │   └── [other next files]
-          ├── _next/static/
-          │   └── [static files]
-          ├── public/
-          │   └── [public files]
-          └── .htaccess
-
-          After upload, access: https://cms.bungmekanik.co.id/admin
-          EOF
+          echo "MANUAL UPLOAD INSTRUCTIONS:" > UPLOAD_INSTRUCTIONS.txt
+          echo "========================" >> UPLOAD_INSTRUCTIONS.txt
+          echo "" >> UPLOAD_INSTRUCTIONS.txt
+          echo "1. Connect via FileZilla to: ${{ secrets.CPANEL_FTP_SERVER }}" >> UPLOAD_INSTRUCTIONS.txt
+          echo "2. Navigate to: /home/bungmek1/cms.bungmekanik.co.id/" >> UPLOAD_INSTRUCTIONS.txt
+          echo "" >> UPLOAD_INSTRUCTIONS.txt
+          echo "3. Upload DEPLOY_STANDALONE contents to root folder" >> UPLOAD_INSTRUCTIONS.txt
+          echo "4. Upload DEPLOY_STATIC contents to _next/static/ folder" >> UPLOAD_INSTRUCTIONS.txt
+          echo "5. Upload DEPLOY_PUBLIC contents to root folder" >> UPLOAD_INSTRUCTIONS.txt
+          echo "6. Ensure .htaccess is in root folder" >> UPLOAD_INSTRUCTIONS.txt
+          echo "" >> UPLOAD_INSTRUCTIONS.txt
+          echo "Folder Structure:" >> UPLOAD_INSTRUCTIONS.txt
+          echo "/cms.bungmekanik.co.id/" >> UPLOAD_INSTRUCTIONS.txt
+          echo "├── [standalone files]" >> UPLOAD_INSTRUCTIONS.txt
+          echo "├── .next/" >> UPLOAD_INSTRUCTIONS.txt
+          echo "│   ├── static/" >> UPLOAD_INSTRUCTIONS.txt
+          echo "│   ├── server/" >> UPLOAD_INSTRUCTIONS.txt
+          echo "│   └── [other next files]" >> UPLOAD_INSTRUCTIONS.txt
+          echo "├── _next/static/" >> UPLOAD_INSTRUCTIONS.txt
+          echo "│   └── [static files]" >> UPLOAD_INSTRUCTIONS.txt
+          echo "├── public/" >> UPLOAD_INSTRUCTIONS.txt
+          echo "│   └── [public files]" >> UPLOAD_INSTRUCTIONS.txt
+          echo "└── .htaccess" >> UPLOAD_INSTRUCTIONS.txt
+          echo "" >> UPLOAD_INSTRUCTIONS.txt
+          echo "After upload, access: https://cms.bungmekanik.co.id/admin" >> UPLOAD_INSTRUCTIONS.txt
 
           echo "✅ Build optimization complete!"
           echo "📁 Ready for manual upload via FileZilla"

@@ -18,7 +18,6 @@ jobs:
         with:
           node-version: 20
 
-      # 🔍 Auto detect package manager
       - name: Detect Package Manager
         id: detect-pm
         run: |
@@ -31,14 +30,12 @@ jobs:
           fi
           echo "Detected package manager: ${{ steps.detect-pm.outputs.manager }}"
 
-      # ⚙️ Setup pnpm if needed
       - name: Setup pnpm
         if: steps.detect-pm.outputs.manager == 'pnpm'
         uses: pnpm/action-setup@v4
         with:
           version: 9
 
-      # 📦 Install dependencies
       - name: Install Dependencies
         run: |
           if [ "${{ steps.detect-pm.outputs.manager }}" = "pnpm" ]; then
@@ -49,7 +46,6 @@ jobs:
             npm ci
           fi
 
-      # 🧱 Initialize Payload DB schema (if not exists)
       - name: Initialize Payload Database
         env:
           DATABASE_URL: ${{ secrets.DATABASE_BUILD_URL }}
@@ -84,7 +80,6 @@ jobs:
             fi
           )
 
-      # 🌱 Auto Seed (create default admin if not exists)
       - name: Seed Default Admin User
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -103,7 +98,6 @@ jobs:
             npx tsx src/utilities/admin-seed.ts
           fi
 
-      # 🏗️ Build Next.js + Payload
       - name: Build Next.js + Payload
         env:
           DATABASE_URL: ${{ secrets.DATABASE_BUILD_URL }}
@@ -119,7 +113,6 @@ jobs:
             npm run build
           fi
 
-      # 🗂️ Optimize and prepare files for manual upload
       - name: Prepare Files for Manual Upload
         run: |
           echo "🗂️ Optimizing files for manual upload..."
@@ -175,23 +168,23 @@ jobs:
             echo "❌ .htaccess not found in root directory"
             # Create basic .htaccess if not exists
             cat > .htaccess << 'EOF'
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
-PassengerAppRoot "/home/bungmek1/public_html/cms.bungmekanik.co.id"
-PassengerBaseURI "/"
-PassengerNodejs "/home/bungmek1/nodevenv/public_html/cms.bungmekanik.co.id/20/bin/node"
-PassengerAppType node
-PassengerStartupFile server.js
-PassengerNodeEnv production
-PassengerStartupTimeout 120
-PassengerMinInstances 1
-PassengerMaxInstances 3
-PassengerMaxRequestQueueSize 100
-# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
-EOF
-            cp .htaccess DEPLOY_PUBLIC/
-            cp .htaccess DEPLOY_STANDALONE/
-            echo "📄 Created basic .htaccess"
-          fi
+          # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+          PassengerAppRoot "/home/bungmek1/public_html/cms.bungmekanik.co.id"
+          PassengerBaseURI "/"
+          PassengerNodejs "/home/bungmek1/nodevenv/public_html/cms.bungmekanik.co.id/20/bin/node"
+          PassengerAppType node
+          PassengerStartupFile server.js
+          PassengerNodeEnv production
+          PassengerStartupTimeout 120
+          PassengerMinInstances 1
+          PassengerMaxInstances 3
+          PassengerMaxRequestQueueSize 100
+          # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+          EOF
+                      cp .htaccess DEPLOY_PUBLIC/
+                      cp .htaccess DEPLOY_STANDALONE/
+                      echo "📄 Created basic .htaccess"
+                    fi
 
           # Remove unnecessary files
           find DEPLOY_STANDALONE -name "*.md" -delete
@@ -250,7 +243,6 @@ EOF
           echo "📁 Ready for manual upload via FileZilla"
           echo "📋 See UPLOAD_INSTRUCTIONS.txt for details"
 
-      # 📦 Upload artifacts for download
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -262,5 +254,5 @@ EOF
             UPLOAD_INSTRUCTIONS.txt
           retention-days: 1
 
-      - name: ✅ Build Complete
+      - name: Build Complete
         run: echo "✅ Build selesai! Download artifacts dan upload manual via FileZilla"

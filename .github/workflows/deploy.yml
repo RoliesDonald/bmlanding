@@ -137,32 +137,61 @@ jobs:
           rm -rf .next/standalone/.git 2>/dev/null || true
           echo "✅ Deployment optimization complete"
 
-      # 📤 Simple Deploy using cURL (More reliable)
-      - name: Deploy to cPanel via cURL
-        run: |
-          # Install required tools
-          sudo apt-get update && sudo apt-get install -y curl
+      # 📤 Deploy using FTP with correct cPanel paths
+      - name: Deploy to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: .next/standalone/
+          server-dir: cms.bungmekanik.co.id/
+          security: 'loose'
+          timeout: 300000
+          log-level: 'verbose'
+          exclude: '*.log *.tmp cache/ node_modules/ tests/ *.md *.txt'
 
-          # Create deployment directory structure
-          echo "📁 Creating deployment directory structure..."
+      # 📤 Deploy Static Assets
+      - name: Deploy Static Assets to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: .next/static/
+          server-dir: cms.bungmekanik.co.id/_next/static/
+          security: 'loose'
+          timeout: 180000
+          log-level: 'minimal'
 
-          # Deploy standalone application
-          echo "📤 Deploying standalone application..."
-          find .next/standalone -type f -exec curl -T {} -u "${{ secrets.CPANEL_FTP_USERNAME }}:${{ secrets.CPANEL_FTP_PASSWORD }}" ftp://${{ secrets.CPANEL_FTP_SERVER }}/cms.bungmekanik.co.id/{} \;
+      # 📤 Deploy Public Files
+      - name: Deploy Public Files to cPanel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: public/
+          server-dir: cms.bungmekanik.co.id/
+          security: 'loose'
+          timeout: 120000
+          log-level: 'minimal'
+          exclude: '*.log *.tmp cache/ src/ components/'
 
-          # Deploy static assets
-          echo "📤 Deploying static assets..."
-          find .next/static -type f -exec curl -T {} -u "${{ secrets.CPANEL_FTP_USERNAME }}:${{ secrets.CPANEL_FTP_PASSWORD }}" ftp://${{ secrets.CPANEL_FTP_SERVER }}/cms.bungmekanik.co.id/_next/static/{} \;
-
-          # Deploy public files
-          echo "📤 Deploying public files..."
-          find public -type f -exec curl -T {} -u "${{ secrets.CPANEL_FTP_USERNAME }}:${{ secrets.CPANEL_FTP_PASSWORD }}" ftp://${{ secrets.CPANEL_FTP_SERVER }}/cms.bungmekanik.co.id/{} \;
-
-          # Deploy .htaccess
-          echo "📤 Deploying .htaccess..."
-          curl -T .htaccess -u "${{ secrets.CPANEL_FTP_USERNAME }}:${{ secrets.CPANEL_FTP_PASSWORD }}" ftp://${{ secrets.CPANEL_FTP_SERVER }}/cms.bungmekanik.co.id/.htaccess
-
-          echo "✅ Deployment completed using cURL!"
+      # 📤 Deploy .htaccess file
+      - name: Deploy .htaccess Configuration
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.CPANEL_FTP_SERVER }}
+          username: ${{ secrets.CPANEL_FTP_USERNAME }}
+          password: ${{ secrets.CPANEL_FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: cms.bungmekanik.co.id/
+          security: 'loose'
+          timeout: 60000
+          log-level: 'minimal'
+          exclude: '*'
+          include: '.htaccess'
 
       - name: ✅ Done ya
         run: echo "✅ Build + Deploy selesai! Akses admin di/admin"

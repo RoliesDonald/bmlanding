@@ -1,4 +1,4 @@
-name: 🚀 Deploy Payload + Next.js Hybrid
+name: 🚀 Build Payload + Next.js for Manual Upload
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -119,84 +119,65 @@ jobs:
             npm run build
           fi
 
-      # 🗂️ Optimize deployment size
-      - name: Optimize deployment files
+      # 🗂️ Optimize and prepare files for manual upload
+      - name: Prepare Files for Manual Upload
         run: |
-          echo "🗂️ Optimizing deployment size..."
-          # Remove unnecessary files from standalone build
-          find .next/standalone -name "*.md" -delete
-          find .next/standalone -name "*.txt" -delete
-          find .next/standalone -name "*.log" -delete
-          find .next/standalone -name "README*" -delete
-          find .next/standalone -name ".git*" -delete
-          # Remove test files and development files
-          find .next/standalone -name "*.test.*" -delete
-          find .next/standalone -name "*.spec.*" -delete
-          # Remove development-only directories if they exist
-          rm -rf .next/standalone/tests 2>/dev/null || true
-          rm -rf .next/standalone/.git 2>/dev/null || true
-          echo "✅ Deployment optimization complete"
+          echo "🗂️ Optimizing files for manual upload..."
 
-      # 📤 Final Deploy using LFTP (Most Reliable)
-      - name: Deploy to cPanel using LFTP
-        run: |
-          # Install LFTP
-          sudo apt-get update && sudo apt-get install -y lftp
+          # Create deployment folders
+          mkdir -p DEPLOY_STANDALONE
+          mkdir -p DEPLOY_STATIC
+          mkdir -p DEPLOY_PUBLIC
 
-          # Create LFTP script with robust settings
-          cat << 'EOF' > deploy_script.lftp
-          set ftp:ssl-allow no
-          set ftp:passive-mode on
-          set ftp:list-options -a
-          set net:max-retries 3
-          set net:timeout 120
-          set net:reconnect-interval 30
-          set net:connection-limit 1
-          set xfer:clobber on
-          set mirror:use-pget-n 1
-          set mirror:parallel-transfer-count 1
-          set ssl:verify-certificate no
+          # Copy optimized standalone files
+          cp -r .next/standalone/* DEPLOY_STANDALONE/
 
-          # Connect to FTP server
-          open ftp://${{ secrets.CPANEL_FTP_USERNAME }}:${{ secrets.CPANEL_FTP_PASSWORD }}@${{ secrets.CPANEL_FTP_SERVER }}
+          # Copy static files
+          cp -r .next/static/* DEPLOY_STATIC/
 
-          # Create directories first
-          mkdir -f cms.bungmekanik.co.id
-          mkdir -f cms.bungmekanik.co.id/_next
-          mkdir -f cms.bungmekanik.co.id/_next/static
+          # Copy public files (only essential ones)
+          cp public/*.{ico,svg,png,jpg,jpeg,gif,webp} DEPLOY_PUBLIC/ 2>/dev/null || true
 
-          # Upload standalone application (single thread for stability)
-          echo "📤 Uploading standalone application..."
-          mirror --reverse --verbose --ignore-time --no-perms --parallel=1 .next/standalone/ cms.bungmekanik.co.id/
+          # Copy .htaccess
+          cp .htaccess DEPLOY_PUBLIC/
 
-          # Upload static assets
-          echo "📤 Uploading static assets..."
-          mirror --reverse --verbose --ignore-time --no-perms --parallel=1 .next/static/ cms.bungmekanik.co.id/_next/static/
+          # Remove unnecessary files
+          find DEPLOY_STANDALONE -name "*.md" -delete
+          find DEPLOY_STANDALONE -name "*.txt" -delete
+          find DEPLOY_STANDALONE -name "*.log" -delete
+          find DEPLOY_STANDALONE -name "README*" -delete
+          find DEPLOY_STANDALONE -name ".git*" -delete
+          find DEPLOY_STANDALONE -name "*.test.*" -delete
+          find DEPLOY_STANDALONE -name "*.spec.*" -delete
+          rm -rf DEPLOY_STANDALONE/tests 2>/dev/null || true
+          rm -rf DEPLOY_STANDALONE/.git 2>/dev/null || true
 
-          # Upload public files
-          echo "📤 Uploading public files..."
-          mirror --reverse --verbose --ignore-time --no-perms --parallel=1 --exclude-glob="*.log" --exclude-glob="*.tmp" --exclude-glob="cache/" --exclude-glob="src/" --exclude-glob="components/" public/ cms.bungmekanik.co.id/
+          # Create upload instructions
+          cat > UPLOAD_INSTRUCTIONS.txt << 'EOF'
+          MANUAL UPLOAD INSTRUCTIONS:
+          ========================
 
-          # Upload .htaccess
-          echo "📤 Uploading .htaccess..."
-          put .htaccess cms.bungmekanik.co.id/.htaccess
+          1. Connect via FileZilla to: ${{ secrets.CPANEL_FTP_SERVER }}
+          2. Navigate to: /home/bungmek1/cms.bungmekanik.co.id/
 
-          quit
+          3. Upload DEPLOY_STANDALONE contents to root folder
+          4. Upload DEPLOY_STATIC contents to _next/static/ folder
+          5. Upload DEPLOY_PUBLIC contents to root folder
+          6. Ensure .htaccess is in root folder
+
+          Folder Structure:
+          /cms.bungmekanik.co.id/
+          ├── [standalone files]
+          ├── _next/static/
+          │   └── [static files]
+          └── [public files & .htaccess]
+
+          After upload, access: https://cms.bungmekanik.co.id/admin
           EOF
 
-          # Execute deployment with retry
-          for i in {1..3}; do
-            echo "🚀 Deployment attempt $i of 3..."
-            if lftp -f deploy_script.lftp; then
-              echo "✅ Deployment successful!"
-              break
-            else
-              echo "❌ Deployment attempt $i failed. Retrying in 30 seconds..."
-              sleep 30
-            fi
-          done
+          echo "✅ Build optimization complete!"
+          echo "📁 Ready for manual upload via FileZilla"
+          echo "📋 See UPLOAD_INSTRUCTIONS.txt for details"
 
-          echo "✅ LFTP deployment completed!"
-
-      - name: ✅ Done ya
-        run: echo "✅ Build + Deploy selesai! Akses admin di/admin"
+      - name: ✅ Build Complete
+        run: echo "✅ Build selesai! Folder siap diupload manual via FileZilla"

@@ -1,10 +1,10 @@
-name: 🚀 Deploy Payload + Next.js Hybrid (Fallback)
+name: 🚀 Build Only (Manual Deploy)
 
 on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -63,60 +63,41 @@ jobs:
             npm run build
           fi
 
-      # 🗂️ Optimize deployment size
-      - name: Optimize deployment files
+      # 🗂️ Optimize and prepare files for manual upload
+      - name: Prepare Files for Manual Upload
         run: |
-          echo "🗂️ Optimizing deployment size..."
-          # Remove unnecessary files from standalone build
-          find .next/standalone -name "*.md" -delete
-          find .next/standalone -name "*.txt" -delete
-          find .next/standalone -name "*.log" -delete
-          find .next/standalone -name "README*" -delete
-          find .next/standalone -name ".git*" -delete
-          # Remove test files and development files
-          find .next/standalone -name "*.test.*" -delete
-          find .next/standalone -name "*.spec.*" -delete
-          # Remove development-only directories if they exist
-          rm -rf .next/standalone/tests 2>/dev/null || true
-          rm -rf .next/standalone/.git 2>/dev/null || true
-          echo "✅ Deployment optimization complete"
+          echo "🗂️ Optimizing files for manual upload..."
 
-      # 📤 Deploy using LFTP to correct domain
-      - name: Deploy using LFTP
-        run: |
-          # Install LFTP
-          sudo apt-get update && sudo apt-get install -y lftp
+          # Create deployment folders
+          mkdir -p DEPLOY_STANDALONE
+          mkdir -p DEPLOY_STATIC
+          mkdir -p DEPLOY_PUBLIC
 
-          # Create optimized LFTP script
-          cat << 'EOF' > deploy_script.lftp
-          set ftp:ssl-allow no
-          set ftp:passive-mode on
-          set ftp:list-options -a
-          set net:max-retries 2
-          set net:timeout 60
-          set net:reconnect-interval 30
-          set xfer:clobber on
-          set mirror:use-pget-n 5
-          set mirror:parallel-transfer-count 3
+          # Copy optimized standalone files
+          cp -r .next/standalone/* DEPLOY_STANDALONE/
 
-          open ftp://${{ secrets.CPANEL_FTP_USERNAME }}:${{ secrets.CPANEL_FTP_PASSWORD }}@${{ secrets.CPANEL_FTP_SERVER }}
+          # Copy static files
+          cp -r .next/static/* DEPLOY_STATIC/
 
-          # Upload main application to correct domain
-          mirror --reverse --parallel=3 --verbose --ignore-time --no-perms .next/standalone/ /cms.bungmekanik.co.id/
+          # Copy public files (only essential ones)
+          cp public/*.{ico,svg,png,jpg,jpeg,gif,webp} DEPLOY_PUBLIC/ 2>/dev/null || true
 
-          # Upload static assets
-          mirror --reverse --parallel=2 --verbose --ignore-time --no-perms .next/static/ /cms.bungmekanik.co.id/_next/static/
+          # Copy .htaccess
+          cp .htaccess DEPLOY_PUBLIC/
 
-          # Upload essential public files only
-          mirror --reverse --parallel=2 --verbose --ignore-time --no-perms --exclude-glob="*.log" --exclude-glob="*.tmp" --exclude-glob="cache/" --exclude-glob="src/" --exclude-glob="components/" public/ /cms.bungmekanik.co.id/
+          # Remove unnecessary files
+          find DEPLOY_STANDALONE -name "*.md" -delete
+          find DEPLOY_STANDALONE -name "*.txt" -delete
+          find DEPLOY_STANDALONE -name "*.log" -delete
+          find DEPLOY_STANDALONE -name "README*" -delete
+          find DEPLOY_STANDALONE -name ".git*" -delete
+          find DEPLOY_STANDALONE -name "*.test.*" -delete
+          find DEPLOY_STANDALONE -name "*.spec.*" -delete
+          rm -rf DEPLOY_STANDALONE/tests 2>/dev/null || true
+          rm -rf DEPLOY_STANDALONE/.git 2>/dev/null || true
 
-          quit
-          EOF
+          echo "✅ Build optimization complete!"
+          echo "📁 Ready for manual upload via FileZilla"
 
-          # Execute deployment
-          lftp -f deploy_script.lftp
-
-          echo "✅ Deployment completed using LFTP!"
-
-      - name: ✅ Done ya
-        run: echo "✅ Build + Deploy selesai! Akses admin di/admin"
+      - name: ✅ Build Complete
+        run: echo "✅ Build selesai! Folder siap diupload manual via FileZilla"
